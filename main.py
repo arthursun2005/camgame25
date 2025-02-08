@@ -24,7 +24,7 @@ class Game:
         
         self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
         self.light = pygame.image.load("Assets Folder\spotlight.png").convert_alpha()
-
+        
         self.world = None
         self.p = None
         self.planes = None
@@ -110,6 +110,8 @@ class Game:
             pressed = pygame.key.get_pressed()
             if pressed[K_a]:
                 self.lightRadius += 0.5
+            if pressed[K_b]:
+                self.lightRadius -= 0.5
 
             self.sprites.update(self, pressed, down)
 
@@ -117,7 +119,7 @@ class Game:
                 for x, cell in enumerate(row):
                     self.screen.blit(cell.image(), cell.rect())
             self.screen.blit(self.player.image, self.player.rect)
-            self.spotlight(self.player.rect.center,self.lightRadius)
+            self.spotlight(self.player.rect.center, self.lightRadius)
 
             pygame.display.flip()
             self.clock.tick(FPS)
