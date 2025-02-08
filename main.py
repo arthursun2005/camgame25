@@ -17,12 +17,12 @@ class Game:
 
         try:
             pygame.mixer.init()
-            self.music = pygame.mixer.Sound("assets/music/m.wav")
+            self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
             self.music.play(-1)
         except:
             pass
         
-        self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
+        self.tileset = pygame.image.load("Assets Folder/Dungeon_Tileset.png").convert_alpha()
 
         self.world = None
         self.p = None
