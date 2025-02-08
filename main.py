@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-
+from manual import TEST
 from config import *
 
 
@@ -36,13 +36,20 @@ class Game:
                     (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
         return sprite
     
-    def main():
+    def main(self):
         running = True
+        self.init_World(TEST)
         while running:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     running = False
 
-            for row in self.worldSprL:
-                for item in row:
-                    screen.blit()
+            for xCor in self.worldSprL:
+                for yCor in xCor:
+                    screen.blit(self.worldSprL[xCor][yCor],pygame.rect(xCor*TILE_SIZE,yCor*TILE_SIZE,(xCor+1)*TILE_SIZE),(yCor+1)*TILE_SIZE)
+
+            pygame.display.flip()
+    
+
+game = Game()
+game.main()
