@@ -17,7 +17,7 @@ class Game:
 
         try:
             pygame.mixer.init()
-            self.music = pygame.mixer.Sound("assets/music/m.wav")
+            self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
             self.music.play(-1)
         except:
             pass
@@ -48,13 +48,18 @@ class Game:
         self.player = Player(1, 1)
         self.sprites.add(self.player)
     
-    def arrValue(self,item):
+    def arrValue(self,item,p):
         if item == "#":
             return get_image(self.tileset, 9, 6)
         elif item == ".":
             return get_image(self.tileset, 9, 7)
         elif item == "+":
-            return get_square("white")
+            if p == 0:
+                return get_image(self.tileset,9,0)
+            elif p == 1:
+                return get_image(self.tileset,8,0)
+            elif p == 2:
+                return get_image(self.tileset,7,0)
         elif item == "R":
             return get_square("red")
         elif item == "B":
@@ -73,6 +78,7 @@ class Game:
     def main(self):
         running = True
         self.init_World(MAP)
+        self.lightRadius = 5
         while running:
 
             down = set()
@@ -85,6 +91,8 @@ class Game:
                         if self.get_cell(self.player.x, self.player.y + 1).mode() == '+':
                             self.p = (self.p + 1) % self.planes
             pressed = pygame.key.get_pressed()
+            if pressed[K_a]:
+                self.lightRadius += 0.5
 
             self.sprites.update(self, pressed, down)
 
@@ -92,6 +100,7 @@ class Game:
                 for x, cell in enumerate(row):
                     self.screen.blit(cell.image(), cell.rect())
             self.screen.blit(self.player.image, self.player.rect)
+            self.spotlight(self.player.rect.center,self.lightRadius)
 
             pygame.display.flip()
             self.clock.tick(FPS)

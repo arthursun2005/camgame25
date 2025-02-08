@@ -52,7 +52,7 @@ def generate_piano_note(freq=440, duration=1.5, sample_rate=44100):
 
 def main():
     sample_rate = 44100
-    duration = 1.5  # seconds
+    duration = 0.2  # seconds
     freq = 392 # A4 (440 Hz)
     
     # Generate the synthesized note
