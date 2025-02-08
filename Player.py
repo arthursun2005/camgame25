@@ -8,7 +8,7 @@ from pygame.locals import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, *groups):
         super().__init__(*groups)
-        self.spritesheet = pygame.image.load("Assets Folder\Dungeon_Character_2.png").convert_alpha()
+        self.spritesheet = pygame.image.load("Assets Folder/Dungeon_Character_2.png").convert_alpha()
         self.image = get_image(self.spritesheet, 0, 0)
         self.x = x
         self.y = y

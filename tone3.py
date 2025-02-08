@@ -66,7 +66,8 @@ def generate_better_violin(freq=440, duration=1.0, sample_rate=44100):
         amplitude = (1 / n) ** 0.8
 
         # Slow amplitude modulation to simulate subtle bow pressure variations
-        amplitude_mod = 1 + 0.05 * np.sin(2 * np.pi * 0.5 * t + phase_offset)
+        # amplitude_mod = 1 + 0.05 * np.sin(2 * np.pi * 0.5 * t + phase_offset)
+        amplitude_mod = 1
 
         note += amplitude * amplitude_mod * np.sin(phase)
 
