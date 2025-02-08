@@ -1,4 +1,5 @@
-TILE_SIZE = 16
+TILE_DEPTH = 16 # size of tile in tile sheet
+TILE_SIZE = 32 # size of tile in game
 WORLD_WIDTH = 16
 WORLD_HEIGHT = 16
 SCREEN_WIDTH = TILE_SIZE * WORLD_WIDTH

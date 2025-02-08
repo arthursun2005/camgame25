@@ -31,9 +31,10 @@ class Game:
         #TODO REST OF THE ITEMS, COLORED DOORS, CONNECTION UP, CONNECTION DOWN, ETC.
 
     def get_image(self, x, y):
-        sprite = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA, 16).convert_alpha()
+        sprite = pygame.Surface((TILE_DEPTH, TILE_DEPTH), pygame.SRCALPHA, 32).convert_alpha()
         sprite.blit(self.tileset, (0, 0), 
-                    (x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+                    (x * TILE_DEPTH, y * TILE_DEPTH, TILE_DEPTH, TILE_DEPTH))
+        sprite = pygame.transform.scale(sprite, (TILE_SIZE, TILE_SIZE))
         return sprite
     
     def main(self):
