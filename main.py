@@ -41,7 +41,7 @@ class Game:
         self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
 
         self.world = [
-            [[Tile(self.arrValue(world[p][i][j]), j, i, world[p][i][j]) for j in range(self.height)]
+            [[Tile(self.arrValue(world[p][i][j],p), j, i, world[p][i][j]) for j in range(self.height)]
              for i in range(self.width)] for p in range(self.planes)
         ]
         self.p = 0 # current plane
@@ -50,13 +50,18 @@ class Game:
         self.player = Player(1, 1)
         self.sprites.add(self.player)
     
-    def arrValue(self,item):
+    def arrValue(self,item,p):
         if item == "#":
             return get_image(self.tileset, 9, 6)
         elif item == ".":
             return get_image(self.tileset, 9, 7)
         elif item == "+":
-            return get_square("white")
+            if p == 0:
+                return get_image(self.tileset,9,0)
+            elif p == 1:
+                return get_image(self.tileset,8,0)
+            elif p == 2:
+                return get_image(self.tileset,7,0)
         elif item == "R":
             return get_square("red")
         elif item == "B":
