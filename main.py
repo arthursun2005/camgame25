@@ -23,6 +23,7 @@ class Game:
             pass
         
         self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
+        self.light = pygame.image.load("Assets Folder\spotlight.png").convert_alpha()
 
         self.world = None
         self.p = None
@@ -76,10 +77,20 @@ class Game:
 
     def get_cell(self, x, y):
         return self.world[self.p][y][x]
+    
+    def spotlight(self,pos_tuple,size):
+        x,y = pos_tuple
+        filter = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        filter.fill(pygame.color.Color('Grey'))
+        scaled_light = pygame.transform.scale(self.light,(self.light.get_width() * size,self.light.get_height() * size))
+        sclight_width, sclight_height = scaled_light.get_size()
+        filter.blit(scaled_light,(x-(sclight_width / 2),y-(sclight_height/2)))
+        self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
 
     def main(self):
         running = True
         self.init_World(MAP)
+        self.lightRadius = 5
         while running:
             down = set()
             for event in pygame.event.get():
@@ -91,6 +102,8 @@ class Game:
                         if self.get_cell(self.player.x, self.player.y + 1).mode() == '+':
                             self.p = (self.p + 1) % self.planes
             pressed = pygame.key.get_pressed()
+            if pressed[K_a]:
+                self.lightRadius += 0.5
 
             self.sprites.update(self, pressed, down)
 
@@ -98,6 +111,7 @@ class Game:
                 for x, cell in enumerate(row):
                     self.screen.blit(cell.image(), cell.rect())
             self.screen.blit(self.player.image, self.player.rect)
+            self.spotlight(self.player.rect.center,self.lightRadius)
 
             pygame.display.flip()
             self.clock.tick(FPS)
