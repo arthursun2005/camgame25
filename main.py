@@ -6,7 +6,7 @@ from config import *
 from utils import *
 
 from Player import Player
-from tile import Tile
+from primitives import Tile, World
 
 
 class Game:
@@ -21,9 +21,9 @@ class Game:
             self.music.play(-1)
         except:
             pass
-        
-        self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
 
+        self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
+        
         self.world = None
         self.p = None
         self.planes = None
@@ -37,16 +37,14 @@ class Game:
 
     
     def init_World(self, world):
-        self.planes, self.width, self.height = len(world), len(world[0]), len(world[0][0])
-        self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
+        self.sprites = pygame.sprite.Group()
 
-        self.world = [
-            [[Tile(self.arrValue(world[p][i][j]), j, i, world[p][i][j]) for j in range(self.height)]
-             for i in range(self.width)] for p in range(self.planes)
-        ]
+        self.world = World(world, self.sprites, self.tileset)
+        self.planes, self.width, self.height = self.world.dim()
+
+        self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
         self.p = 0 # current plane
 
-        self.sprites = pygame.sprite.Group()
         self.player = Player(1, 1)
         self.sprites.add(self.player)
     
@@ -70,12 +68,13 @@ class Game:
         #TODO REST OF THE ITEMS, COLORED DOORS, CONNECTION UP, CONNECTION DOWN, ETC.
 
     def get_cell(self, x, y):
-        return self.world[self.p][y][x]
+        return self.world()[self.p][y][x]
 
     def main(self):
         running = True
         self.init_World(MAP)
         while running:
+
             down = set()
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -89,7 +88,7 @@ class Game:
 
             self.sprites.update(self, pressed, down)
 
-            for y, row in enumerate(self.world[self.p]):
+            for y, row in enumerate(self.world()[self.p]):
                 for x, cell in enumerate(row):
                     self.screen.blit(cell.image(), cell.rect())
             self.screen.blit(self.player.image, self.player.rect)
