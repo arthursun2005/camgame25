@@ -20,8 +20,8 @@ class Game:
         except:
             pass
     
-    def init_World(self,world_arr):
-        self.worldSprL = [self.arrValue(world_arr[i][j]) for j in range(WORLD_WIDTH) for i in range(WORLD_HEIGHT)]
+    def init_World(self, world):
+        self.world = [[self.arrValue(world[i][j]) for j in range(len(world))] for i in range(len(world[0]))]
     
     def arrValue(self,item):
         if item == "#":
@@ -44,9 +44,9 @@ class Game:
                 if event.type == QUIT:
                     running = False
 
-            for xCor in self.worldSprL:
-                for yCor in xCor:
-                    screen.blit(self.worldSprL[xCor][yCor],pygame.rect(xCor*TILE_SIZE,yCor*TILE_SIZE,(xCor+1)*TILE_SIZE),(yCor+1)*TILE_SIZE)
+            for y, row in enumerate(self.world):
+                for x, cell in enumerate(row):
+                    screen.blit(cell, pygame.Rect(x*TILE_SIZE, y*TILE_SIZE, (x+1)*TILE_SIZE, (y+1)*TILE_SIZE))
 
             pygame.display.flip()
     
