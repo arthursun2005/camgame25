@@ -124,11 +124,10 @@ class World:
             for y in range(self._h // 2):
                 for x in range(self._w // 2):
                     self._orig_orient[p][y][x] = self._orient_orig(self._orig[p], x, y)
-        print(self._orig_orient[0])
-        
-        # for p in range(self._ps):
-        #     self._orientate(self._world[p])
-        
+        for p in range(self._ps):
+            for y in range(self._h):
+                for x in range(self._w):
+                    self._world[p][y][x].set_orient(self._orient_tile(self._world[p], x, y))
     
     def dim(self):
         return self._ps, self._w, self._h
@@ -160,10 +159,13 @@ class World:
         for y in range(self._h):
             for x in range(self._w):
                 if not plane[y][x].not_wall():
-                    plane[y][x].set_orient(self._orientate_tile(plane, x, y))
+                    plane[y][x].set_orient(self._orient_tile(plane, x, y))
     
-    def _orientate_tile(self, plane, x, y):
-        # U D L R
+    def _get_corner(self, x, y):
+        return (x % 2, y % 2)
+
+    def _orient_tile(self, plane, x, y):
+        match self._orig
         adj = self._get_adj(plane, x, y)
         if all([a.empty() for a in adj.values()]):
             return Orient.CENTER
