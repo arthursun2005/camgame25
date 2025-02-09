@@ -71,7 +71,7 @@ def generate_tone(freq, duration, inst, sample_rate=SAMPLE_RATE):
     return note
 
 # second = second
-def generate_tune(tune, inst, sec=1, sample_rate=SAMPLE_RATE):
+def generate_tune(inst, tune=tunes['mega'], sec=1, sample_rate=SAMPLE_RATE):
     notes = []
     for note, dur, space in tune:
         freq = note_to_freq(note)

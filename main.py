@@ -102,8 +102,7 @@ class Game:
     def cast_light(self,angleInc,lightRadius):
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
         filter.fill(pygame.color.Color('White'))
-        filter.fill(pygame.color.Color('White'))
-        pygame.draw.polygon(filter,(15,15,15,200),self.ray_intersections(angleInc,lightRadius))
+        pygame.draw.polygon(filter,(0,15,15,200),self.ray_intersections(angleInc,lightRadius))
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
         for points in self.ray_intersections(angleInc,lightRadius):
              pygame.draw.circle(self.screen, (255, 0, 0), points, 1)
@@ -171,7 +170,7 @@ class Game:
 
     def main(self, debug=False):
         running = True
-        self.init_World(genmaze(False))
+        self.init_World(genmaze(True))
         self.lightRadius = 100
         self.buf = []
         self.enemies = pygame.sprite.Group()
@@ -218,7 +217,7 @@ class Game:
                 if self.ff:
                     self.music.stop()
                     self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
-                    self.music.set_volume(0.2)
+                    self.music.set_volume(0.5)
                     # self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
                     self.music.play(-1)
                     self.ff = False
