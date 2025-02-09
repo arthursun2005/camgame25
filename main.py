@@ -113,7 +113,7 @@ class Game:
     def spawn_enemy(self):
         x, y = self.world.get_empty_cell(self.p)
         if (x, y) != (-1, -1):
-            Enemy(x, y, self.p, self.enemies)
+            return Enemy(x, y, self.p, self.enemies, self.sprites)
 
     def main(self, debug=False):
         running = True
@@ -121,9 +121,9 @@ class Game:
         self.lightRadius = 5
         self.buf = []
         self.enemies = pygame.sprite.Group()
-        self.sprites.add(self.enemies)
         for _ in range(MAX_ENEMIES):
             self.spawn_enemy()
+        print(self.world.within_dist(self.p, 3, (5, 5)))
         while running:
             down = set()
             for event in pygame.event.get():
