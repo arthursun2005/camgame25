@@ -96,8 +96,8 @@ class Game:
         self.buf = []
         for obj in coll:
             if isinstance(obj, Tile):
-                a = self.tile_collide(obj)
-                if a:
+                if self.tile_collide(obj):
+                    self.player.set_brect()
                     self.buf.append(obj)
 
     def main(self, debug=False):
@@ -119,12 +119,13 @@ class Game:
                             self.p = cell.conn()
             pressed = pygame.key.get_pressed()
             if pressed[K_g]:
-                self.lightRadius = max(1, min(15, self.lightRadius + 0.5))
+                self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius + DELTA_LIGHT))
             if pressed[K_h]:
-                self.lightRadius = max(1, min(15, self.lightRadius - 0.5))
+                self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius - DELTA_LIGHT))
             
+            self.player.update_keys(self, pressed, down)
             self.handle_player_collision()
-            self.sprites.update(self, pressed, down)
+            self.sprites.update()
             if not self.title.draw(self.screen):
                 if self.ff:
                     self.music.stop()
@@ -137,7 +138,7 @@ class Game:
                         self.screen.blit(cell.image, cell.rect)
 
                 self.screen.blit(self.player.image, self.player.rect)
-                # self.spotlight(self.player.rect.center, self.lightRadius)
+                self.spotlight(self.player.rect.center, self.lightRadius)
             
             if debug:
                 pygame.draw.rect(self.screen, "red", self.player.brect, width=1)
@@ -150,4 +151,4 @@ class Game:
 
 
 game = Game()
-game.main(debug=True)
+game.main(debug=False)

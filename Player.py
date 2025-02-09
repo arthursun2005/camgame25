@@ -34,7 +34,7 @@ class Player(pygame.sprite.Sprite):
         self.orit = 0
         self.moving = False
     
-    def update(self, game, pressed, down):
+    def update_keys(self, game, pressed, down):
         dx, dy = 0, 0
         if pressed[K_UP] or pressed[K_w]:
             dy -= self.spe
@@ -80,13 +80,9 @@ class Player(pygame.sprite.Sprite):
         if self.orit == 3:
             img = self.down[ii].get_image()
         self.image = pygame.transform.scale(img, (self.size, self.size))
-       
-        self.brect = pygame.rect.Rect(
-            self.scene_x + self.padx,
-            self.scene_y + self.pady,
-            self._brect_raw.width,
-            self._brect_raw.height
-        )
+        self.set_brect()
+    
+    def update(self):
         self.rect = self.image.get_rect(topleft=(self.scene_x, self.scene_y))
     
     def clip_top(self, y):
@@ -100,3 +96,11 @@ class Player(pygame.sprite.Sprite):
     
     def clip_right(self, x):
         self.scene_x = min(x - (self.size - self.padx), self.scene_x)
+    
+    def set_brect(self):
+        self.brect = pygame.rect.Rect(
+            self.scene_x + self.padx,
+            self.scene_y + self.pady,
+            self._brect_raw.width,
+            self._brect_raw.height
+        )
