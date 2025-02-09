@@ -190,6 +190,8 @@ def carve_blocks(maze):
             dist = (n - 1) * 2 - (i + j)
             if dist < 4:
                 maze[2][i][j] = match[3 - dist]
+
+    maze[2][n - 4][n - 4] = 'b'
     
     return maze
 
