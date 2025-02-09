@@ -212,7 +212,11 @@ class Game:
             
             self.player.update_keys(self, pressed, down)
             self.handle_player_collision(down)
-            if len(self.enemies) < MAX_ENEMIES:
+            cnt = 0
+            for enemy in self.enemies:
+                if enemy._p == self.p:
+                    cnt += 1
+            if cnt < MAX_ENEMIES:
                 self.spawn_enemy()
             self.sprites.update(self)
             
@@ -239,7 +243,8 @@ class Game:
                         self.screen.blit(cell.image, cell.rect)
 
                 for enemy in self.enemies:
-                    self.screen.blit(enemy.image, enemy.rect)
+                    if enemy._p == self.p:
+                        self.screen.blit(enemy.image, enemy.rect)
                 self.screen.blit(self.player.image, self.player.rect)
                 #self.spotlight(self.player.rect.center, self.lightRadius)
                 
