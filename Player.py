@@ -30,7 +30,7 @@ class Player(Character):
     
     def decrease_hp(self):
         now = time.time()
-        if now - self.last_hit > HIT_COOLDOWN * 1000:
+        if now - self.last_hit > HIT_COOLDOWN:
             self.hp -= 1
             self.last_hit = now
     

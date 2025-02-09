@@ -37,6 +37,7 @@ class Tile(pygame.sprite.Sprite):
         self._mode = mode
         self._tileset = tileset
 
+        self._isdoor = mode in ('R', 'G', 'B')
         self._isconn = mode in ('0', '1', '2')
         self._conn = int(mode) if self._isconn else None
         self._empty = mode == '.' or self._isconn
@@ -77,6 +78,9 @@ class Tile(pygame.sprite.Sprite):
     def mode(self):
         return self._mode
     
+    def isdoor(self):
+        return self._isdoor
+
     def not_wall(self):
         """Return True if non-wall tile (including invalid tiles)"""
         return self._notwall
@@ -195,7 +199,7 @@ class World:
     def dim(self):
         return self._ps, self._w, self._h
     
-    def pathfind(self, p, src, dst):
+    def bfs(self, p, src, max_check=1e9+7):
         dx = (0, 0, -1, 1)
         dy = (-1, 1, 0, 0)
         q = deque()
@@ -211,10 +215,14 @@ class World:
                     continue
                 if not self._world[p][ny][nx].empty():
                     continue
-                if d[y][x] + 1 < d[ny][nx]:
+                if d[y][x] + 1 < d[ny][nx] and d[y][x] + 1 < max_check:
                     d[ny][nx] = d[y][x] + 1
                     par[ny][nx] = (x, y)
                     q.append((ny, nx))
+        return d, par
+
+    def pathfind(self, p, src, dst):
+        d, par = self.bfs(p, src, max_check=MAX_AGGRO)
         if d[dst[1]][dst[0]] == 1e9+7:
             return None
         res = [dst]
@@ -230,21 +238,27 @@ class World:
         dy = (-1, 1, 0, 0)
         q = deque()
         d = [[1e9+7 for _ in range(self._w)] for _ in range(self._h)]
-        par = [[(0, 0) for _ in range(self._w)] for _ in range(self._h)]
         q.append((src[1], src[0]))
         d[src[1]][src[0]] = 0
+        res, resd = None, 1e9+7
         while q:
             y, x = q.popleft()
+            
             for i in range(4):
                 nx, ny = x + dx[i], y + dy[i]
                 if nx < 0 or nx >= self._w or ny < 0 or ny >= self._h:
                     continue
-                if not self._world[p][ny][nx].empty():
+                if not (self._world[p][ny][nx].empty() or self._world[p][ny][nx].isdoor()):
                     continue
-                if d[y][x] + 1 < d[ny][nx]:
+                if d[y][x] + 1 < d[ny][nx] and d[y][x] + 1 < MAX_DOOR_DIST:
                     d[ny][nx] = d[y][x] + 1
-                    par[ny][nx] = (x, y)
-                    q.append((ny, nx))
+                    if self._world[p][ny][nx].isdoor():
+                        if d[ny][nx] < resd:
+                            resd = d[ny][nx]
+                            res = self._world[p][ny][nx]
+                    else:
+                        q.append((ny, nx))
+        return res
 
     def get_empty_cell(self, p):
         calls = 0

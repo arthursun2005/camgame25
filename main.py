@@ -1,3 +1,6 @@
+from collections import deque
+import time
+
 import pygame
 import math
 from pygame.locals import *
@@ -64,7 +67,7 @@ class Game:
     def spotlight(self,pos_tuple,size):
         x,y = pos_tuple
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
-        filter.fill(pygame.color.Color('Grey'))
+        filter.fill(pygame.color.Color('white'))
         scaled_light = pygame.transform.scale(self.light,(self.light.get_width() * size,self.light.get_height() * size))
         sclight_width, sclight_height = scaled_light.get_size()
         light_rect = pygame.Rect(x-(sclight_width/2),y-(sclight_height/2),sclight_width,sclight_height)
@@ -100,7 +103,7 @@ class Game:
     
     def cast_light(self,angleInc,lightRadius):
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
-        filter.fill(pygame.color.Color('Grey'))
+        filter.fill(pygame.color.Color('White'))
         pygame.draw.polygon(filter,(15,15,15,200),self.ray_intersections(angleInc,lightRadius))
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
         for points in self.ray_intersections(angleInc,lightRadius):
@@ -125,7 +128,7 @@ class Game:
             self.player.clip_right(tile.rect.left)
         return Collision.NONE not in colls
 
-    def handle_player_collision(self):
+    def handle_player_collision(self, down):
         coll = self.get_collision(self.player, self.sprites)
         self.buf = []
         for obj in coll:
@@ -135,6 +138,8 @@ class Game:
                     self.buf.append(obj)
             if isinstance(obj, Enemy):
                 if collision(self.player.brect, obj.brect):
+                    if K_q in down:
+                        obj.decrease_hp(self)
                     self.player.decrease_hp()
 
     def set_lightradius(self, radius):
@@ -145,15 +150,28 @@ class Game:
         if (x, y) != (-1, -1):
             return Enemy(x, y, self.p, self.enemies, self.sprites)
 
+    def door_lights(self):
+        lights_to_kill = 0
+        # print(self.spotlights)
+        for light, tm in self.spotlights:
+            if time.time() - tm > DOOR_LIGHT_LIFE:
+                lights_to_kill += 1
+            else:
+                self.spotlight((light._x, light._y), DOOR_LIGHT)
+        for light in range(lights_to_kill):
+            self.spotlights.popleft()
+
     def main(self, debug=False):
         running = True
         self.init_World(genmaze(True))
         self.lightRadius = 50
         self.buf = []
         self.enemies = pygame.sprite.Group()
+        self.spotlights = deque()
         for _ in range(MAX_ENEMIES):
             self.spawn_enemy()
         while running:
+            self.cursl = None
             self.screen.fill((30,30,30)) # Used for the lighting
             down = set()
             for event in pygame.event.get():
@@ -173,12 +191,20 @@ class Game:
                 self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius - DELTA_LIGHT))
             
             self.player.update_keys(self, pressed, down)
-            self.handle_player_collision()
-
-            self.sprites.update(self)
+            self.handle_player_collision(down)
             if len(self.enemies) < MAX_ENEMIES:
                 self.spawn_enemy()
-            self.set_lightradius(self.player.hp * 10)
+            self.sprites.update(self)
+            
+            # self.set_lightradius(self.player.hp * 10)
+            if self.cursl != None:
+                ok = True
+                for light, _ in self.spotlights:
+                    if light == self.cursl:
+                        ok = False
+                        break
+                if ok:
+                    self.spotlights.append((self.cursl, time.time()))
 
             if not self.title.draw(self.screen):
                 if self.ff:
@@ -195,7 +221,9 @@ class Game:
                     self.screen.blit(enemy.image, enemy.rect)
                 self.screen.blit(self.player.image, self.player.rect)
                 #self.spotlight(self.player.rect.center, self.lightRadius)
-                self.cast_light(10,self.lightRadius)
+                
+                self.cast_light(10, self.lightRadius)
+                self.door_lights()
             
             if debug:
                 pygame.draw.rect(self.screen, "red", self.player.brect, width=1)

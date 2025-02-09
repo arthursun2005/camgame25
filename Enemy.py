@@ -28,8 +28,11 @@ class Enemy(Character):
         self.last_check = time.time()
         self.lifetime = random.randint(MIN_LIFETIME, MAX_LIFETIME)
 
+        self.hp = 3
+
     def update(self, game, *args, **kwargs):
-        if time.time() - self.last_check > self.lifetime * 1000:
+        # print(time.time() - self.last_check)
+        if time.time() - self.last_check > self.lifetime:
             self.kill()
         if self._p != game.p:
             return
@@ -81,3 +84,11 @@ class Enemy(Character):
             img = self.down[ii].get_image()
         self.image = pygame.transform.scale(img, (self.size, self.size))
         self.set_brect()
+
+    def decrease_hp(self, game):
+        self.hp -= 1
+        if self.hp <= 0:
+            door = game.world.closest_door(self._p, (self.x, self.y))
+            if door != None:
+                game.cursl = door
+            self.kill()
