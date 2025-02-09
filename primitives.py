@@ -8,15 +8,18 @@ from utils import *
 
 class Tile(pygame.sprite.Sprite):
     _walls = {
-        Orient.UP: [(0, 1), (0, 2), (0, 3), (0, 4)],
-        Orient.DOWN: [(4, 1), (4, 2), (4, 3), (4, 4)],
-        Orient.LEFT: [(1, 0), (2, 0), (3, 0)],
-        Orient.RIGHT: [(1, 5), (2, 5), (3, 5)],
-        Orient.TOPLEFT: [(0, 0)],
-        Orient.TOPRIGHT: [(0, 5)],
-        Orient.BOTTOMLEFT: [(4, 0)],
-        Orient.BOTTOMRIGHT: [(4, 5)],
-        Orient.CENTER: [(4, 5)]
+        Orient.DOWN: [(0, 1), (0, 2), (0, 3), (0, 4)],
+        Orient.UP: [(4, 1), (4, 2), (4, 3), (4, 4), (5, 1), (5, 2)],
+        Orient.RIGHT: [(1, 0), (2, 0), (3, 0)],
+        Orient.LEFT: [(1, 5), (2, 5), (3, 5)],
+        Orient.BOTTOMRIGHT_IN: [(0, 0)],
+        Orient.BOTTOMLEFT_IN: [(0, 5)],
+        Orient.TOPRIGHT_IN: [(4, 0)],
+        Orient.TOPLEFT_IN: [(4, 5)],
+        Orient.BOTTOMRIGHT_OUT: [(0, 0)],
+        Orient.BOTTOMLEFT_OUT: [(0, 5)],
+        Orient.TOPRIGHT_OUT: [(5, 3), (5, 5)],
+        Orient.TOPLEFT_OUT: [(5, 0), (5, 4)]
     }
 
     def __init__(self, group=None, plane=0, x=0, y=0, mode='_', tileset=None):
@@ -59,6 +62,7 @@ class Tile(pygame.sprite.Sprite):
     def set_orient(self, orient):
         self._orient = orient
         y, x = random.choice(Tile._walls[self._orient])
+        print((x, y), end=" ")
         self._image = get_image(self._tileset, x, y)
     
     def image(self):
@@ -107,6 +111,25 @@ class World:
         (1, 1, 1, 1): OrigOrient.SURROUNDED
     }
 
+    _orig_to_world = {
+        OrigOrient.HORIZONTAL: [Orient.UP, Orient.UP, Orient.DOWN, Orient.DOWN],
+        OrigOrient.VERTICAL: [Orient.LEFT, Orient.RIGHT, Orient.LEFT, Orient.RIGHT],
+        OrigOrient.TOPLEFT: [Orient.TOPLEFT_OUT, Orient.UP, Orient.LEFT, Orient.BOTTOMRIGHT_IN],
+        OrigOrient.TOPRIGHT: [Orient.UP, Orient.TOPRIGHT_OUT, Orient.BOTTOMLEFT_IN, Orient.RIGHT],
+        OrigOrient.BOTTOMLEFT: [Orient.LEFT, Orient.TOPRIGHT_IN, Orient.BOTTOMLEFT_OUT, Orient.DOWN],
+        OrigOrient.BOTTOMRIGHT: [Orient.TOPLEFT_IN, Orient.RIGHT, Orient.DOWN, Orient.BOTTOMRIGHT_OUT],
+        OrigOrient.TOP_T: [Orient.UP, Orient.UP, Orient.BOTTOMLEFT_IN, Orient.BOTTOMRIGHT_IN],
+        OrigOrient.BOTTOM_T: [Orient.TOPLEFT_IN, Orient.TOPRIGHT_IN, Orient.DOWN, Orient.DOWN],
+        OrigOrient.LEFT_T: [Orient.LEFT, Orient.TOPRIGHT_IN, Orient.LEFT, Orient.BOTTOMRIGHT_IN],
+        OrigOrient.RIGHT_T: [Orient.TOPLEFT_IN, Orient.RIGHT, Orient.BOTTOMLEFT_IN, Orient.RIGHT],
+        OrigOrient.LEFT_END: [Orient.TOPLEFT_OUT, Orient.UP, Orient.BOTTOMLEFT_OUT, Orient.DOWN],
+        OrigOrient.RIGHT_END: [Orient.UP, Orient.TOPRIGHT_OUT, Orient.DOWN, Orient.BOTTOMRIGHT_OUT],
+        OrigOrient.TOP_END: [Orient.TOPLEFT_OUT, Orient.TOPRIGHT_IN, Orient.LEFT, Orient.RIGHT],
+        OrigOrient.BOTTOM_END: [Orient.LEFT, Orient.RIGHT, Orient.BOTTOMLEFT_OUT, Orient.BOTTOMRIGHT_OUT],
+        OrigOrient.CENTER: [Orient.TOPLEFT_OUT, Orient.TOPRIGHT_OUT, Orient.BOTTOMLEFT_OUT, Orient.BOTTOMRIGHT_OUT],
+        OrigOrient.SURROUNDED: [Orient.TOPLEFT_IN, Orient.TOPRIGHT_IN, Orient.BOTTOMLEFT_IN, Orient.BOTTOMRIGHT_IN]
+    }
+
     def __init__(self, world, group=None, tileset=None):
         self._ps, self._w, self._h = len(world), len(world[0][0]) * 2, len(world[0]) * 2
         self._orig = [
@@ -124,11 +147,16 @@ class World:
             for y in range(self._h // 2):
                 for x in range(self._w // 2):
                     self._orig_orient[p][y][x] = self._orient_orig(self._orig[p], x, y)
-        # for p in range(self._ps):
-        #     for y in range(self._h):
-        #         for x in range(self._w):
-        #             self._world[p][y][x].set_orient(self._orient_tile(self._world[p], x, y))
+        for p in range(self._ps):
+            for y in range(self._h):
+                for x in range(self._w):
+                    if self._world[p][y][x].not_wall():
+                        continue
+                    self._world[p][y][x].set_orient(self._orient_tile(p, x, y))
     
+    def __call__(self, *args, **kwds):
+        return self._world
+
     def flatten(self, p):
         arr = []
         for row in self._world[p]:
@@ -159,39 +187,31 @@ class World:
         adj = self._adj_orig_format(self._get_adj(plane, x, y))
         return World._orig_map[adj]
 
-    def __call__(self, *args, **kwds):
-        return self._world
-    
-    def _orientate(self, plane):
-        for y in range(self._h):
-            for x in range(self._w):
-                if not plane[y][x].not_wall():
-                    plane[y][x].set_orient(self._orient_tile(plane, x, y))
-    
-    def _get_corner(self, x, y):
-        return (x % 2, y % 2)
+    def _orient_tile(self, p, x, y):
+        tx, cx = divmod(x, 2)
+        ty, cy = divmod(y, 2)
+        tile_pos = cy * 2 + cx
+        orig_orient = self._orig_orient[p][ty][tx]
+        world_orient = World._orig_to_world[orig_orient][tile_pos]
+        return world_orient
 
-    def _orient_tile(self, plane, x, y):
-        # match self._orig
-        adj = self._get_adj(plane, x, y)
-        if all([a.empty() for a in adj.values()]):
-            return Orient.CENTER
-        if adj[0].invalid() and adj[1].empty():
-            return Orient.UP
-        if adj[0].empty() and adj[1].invalid():
-            return Orient.DOWN
-        if adj[2].invalid() and adj[3].empty():
-            return Orient.LEFT
-        if adj[2].empty() and adj[3].invalid():
-            return Orient.RIGHT
-        if not adj[1].not_wall() and not adj[3].not_wall():
-            return Orient.TOPLEFT
-        if not adj[1].not_wall() and not adj[2].not_wall():
-            return Orient.TOPRIGHT
-        if not adj[0].not_wall() and not adj[3].not_wall():
-            return Orient.BOTTOMLEFT
-        if not adj[0].not_wall() and not adj[2].not_wall():
-            return Orient.BOTTOMRIGHT
-        return Orient.UP
-        #TODO REST OF THE ITEMS, COLORED DOORS, CONNECTION UP, CONNECTION DOWN, ETC.
+        # if all([a.empty() for a in adj.values()]):
+        #     return Orient.CENTER
+        # if adj[0].invalid() and adj[1].empty():
+        #     return Orient.UP
+        # if adj[0].empty() and adj[1].invalid():
+        #     return Orient.DOWN
+        # if adj[2].invalid() and adj[3].empty():
+        #     return Orient.LEFT
+        # if adj[2].empty() and adj[3].invalid():
+        #     return Orient.RIGHT
+        # if not adj[1].not_wall() and not adj[3].not_wall():
+        #     return Orient.TOPLEFT
+        # if not adj[1].not_wall() and not adj[2].not_wall():
+        #     return Orient.TOPRIGHT
+        # if not adj[0].not_wall() and not adj[3].not_wall():
+        #     return Orient.BOTTOMLEFT
+        # if not adj[0].not_wall() and not adj[2].not_wall():
+        #     return Orient.BOTTOMRIGHT
+        # return Orient.UP
 

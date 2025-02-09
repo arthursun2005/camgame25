@@ -20,11 +20,14 @@ class Orient(Enum):
     DOWN = 2
     LEFT = 3
     RIGHT = 4
-    TOPLEFT = 5
-    TOPRIGHT = 6
-    BOTTOMLEFT = 7
-    BOTTOMRIGHT = 8
-    CENTER = 9
+    TOPLEFT_IN = 5
+    TOPRIGHT_IN = 6
+    BOTTOMLEFT_IN = 7
+    BOTTOMRIGHT_IN = 8
+    TOPLEFT_OUT = 9
+    TOPRIGHT_OUT = 10
+    BOTTOMLEFT_OUT = 11
+    BOTTOMRIGHT_OUT = 12
 
 
 class OrigOrient(Enum):

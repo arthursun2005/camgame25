@@ -35,7 +35,6 @@ class Game:
 
         self.sprites = None
         self.player = None
-
     
     def init_World(self, world):
         self.sprites = pygame.sprite.Group()
@@ -83,12 +82,13 @@ class Game:
         sclight_width, sclight_height = scaled_light.get_size()
         light_rect = pygame.Rect(x-(sclight_width/2),y-(sclight_height/2),sclight_width,sclight_height)
         filter.blit(scaled_light,(x-(sclight_width / 2),y-(sclight_height/2),sclight_width,sclight_height))
-        
+
         for obstacle in self.world.flatten(self.p):
             if obstacle.full():
                 clip_rect = obstacle.rect().clip(light_rect)
                 if clip_rect.width > 0 and clip_rect.height > 0:
-                    filter.fill((128,128,128,255),clip_rect)
+                    # filter.fill((128,128,128,255),clip_rect)
+                    pass
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
 
     def main(self):
