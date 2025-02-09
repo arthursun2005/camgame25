@@ -59,14 +59,14 @@ def generate_handcraft():
          "#.#.#.#.#.#....R",
          "..#.#.#.#.#...RR",
          ".##.###...#..GGB",
-         ".0#.....###.RBB!"],
+         ".0#.....###.RBB!"]
     ]
 
-
 def print_maze(maze):
-    for grid in maze:
+    for i in range (len(maze)):
+        print("Printing layer " + str(i))
         print("---START---")
-        for row in grid:
+        for row in maze[i]:
             print("".join(row))
         print("---END---")
 
@@ -143,10 +143,72 @@ def generate_maze_3d(n):
     layer1[crit12[0]][crit12[1]] = '2'
     layer2[crit12[0]][crit12[1]] = '1'
 
-    return ([layer0, layer1, layer2], (crit01, crit12))
+    return ([layer0, layer1, layer2], ((0, 0), crit01, crit12))
+
+def add_walls_2d(grid, start):
+    n = len(grid)
+
+    # Construct the tree for the maze
+    adj = [[[] for _ in range(n)] for _ in range(n)]
+    par = [[(-1, -1) for _ in range(n)] for _ in range(n)]
+    dist = [[-1 for _ in range(n)] for _ in range(n)]
+
+    dirs = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    stk = [start]
+    par[start[0]][start[1]] = start
+    dist[start[0]][start[1]] = 0
+
+    while stk:
+        x, y = stk[-1]
+        stk.pop()
+        for dx, dy in dirs:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < n and 0 <= ny < n and grid[nx][ny] == '.' and dist[nx][ny] == -1:
+                par[nx][ny] = (x, y)
+                dist[nx][ny] = dist[x][y] + 1
+                adj[x][y].append((nx, ny))
+                stk.append((nx, ny))
+    
+    # Create "dependencies"
+    # Theoretically would want to have nodes to be blocked by as far as possible
+    # Generate a skewed distribution based on distance
+    distrib = []
+    for i in range(n):
+        for j in range(n):
+            if grid[i][j] == '.':
+                distrib.extend([(i, j)] * min(3 * n, dist[i][j]))
+    
+    # Change this constant if you want
+    WALLS = 5
+    for _ in range(WALLS):
+        wall = random.choice(distrib)
+        col = "RGB"[random.randrange(3)]
+
+        grid[wall[0]][wall[1]] = col
+
+        pos = wall
+        # Walk up
+        lim = random.randrange(10, 20)
+        for steps in range(lim):
+            pos = par[pos[0]][pos[1]]
+        
+        # Walk down in random directions
+        lim = random.randrange(15, 20)
+        for steps in range(lim):
+            if not adj[pos[0]][pos[1]]:
+                break
+            nxt = random.choice(adj[pos[0]][pos[1]])
+            if grid[nxt[0]][nxt[1]] != '.':
+                break
+            pos = nxt
+        
+        grid[pos[0]][pos[1]] = col.lower()
+    
+    return grid
 
 def add_walls(maze, crits):
-    # TO BE IMPLEMENTED (trust I'll do it tmr)
+    for i in range(3):
+        maze[i] = add_walls_2d(maze[i], crits[i])
     return maze
 
 def carve_blocks(maze):
@@ -190,9 +252,8 @@ def carve_blocks(maze):
             dist = (n - 1) * 2 - (i + j)
             if dist < 4:
                 maze[2][i][j] = match[3 - dist]
-
-    maze[2][n - 4][n - 4] = 'b'
     
+    maze[2][n - 4][n - 4] = 'b'
     return maze
 
 def genmaze(isHandcraft):
@@ -207,7 +268,8 @@ def genmaze(isHandcraft):
     # print(start)
     return maze
 
+
+# print_maze(genmaze(0))
 # maze = generate_maze_2d([['.' for j in range(n)] for i in range(n)], (0, 0))
 # for row in maze:
 #     print("".join(row))
-
