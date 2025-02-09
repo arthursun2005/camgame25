@@ -51,7 +51,7 @@ class Game:
         self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
         self.p = 0 # current plane
 
-        self.player = Player(3, 3)
+        self.player = Player(4, 6)
         self.sprites.add(self.player)
 
     def get_cell(self, x, y):
@@ -103,6 +103,9 @@ class Game:
                 if self.tile_collide(obj):
                     self.player.set_brect()
                     self.buf.append(obj)
+            if isinstance(obj, Enemy):
+                if collision(self.player.brect, obj.brect):
+                    self.player.decrease_hp()
 
     def main(self, debug=False):
         running = True
@@ -110,7 +113,7 @@ class Game:
         self.lightRadius = 5
         self.buf = []
         self.enemies = []
-        for i in range(1):
+        for i in range(NUM_ENEMIES):
             x, y = self.world.get_empty_cell(self.p)
             if (x, y) != (-1, -1):
                 self.enemies.append(Enemy(x, y, self.p, self.sprites))
@@ -136,7 +139,7 @@ class Game:
             
             a = self.world.pathfind(0, (4, 6), (10, 0))
             self.player.update_keys(self, pressed, down)
-            # self.handle_player_collision()
+            self.handle_player_collision()
             self.sprites.update(self)
             if not self.title.draw(self.screen):
                 if self.ff:

@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 from config import *
@@ -5,14 +7,22 @@ from utils import *
 
 from character import Character
 from ss import Spritesheet
+from animation import Animation
 
 
 class Enemy(Character):
     def __init__(self, x, y, p, *groups):
         spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
-        super().__init__(x, y, 3, spritesheet, *groups)
-        self.image = get_square("red")
+        super().__init__(x, y, ENEMY_SPEED, spritesheet, *groups)
         self._p = p
+
+        sps = self.spritesheet
+        self.down = (Animation(sps, 5, [0, 1, 2, 3]), Animation(sps, 5, [0]))
+        self.right = (Animation(sps, 5, [12, 13, 14, 15]), Animation(sps, 5, [12]))
+        self.up = (Animation(sps, 5, [4, 5, 6, 7]), Animation(sps, 5, [4]))
+
+        self.orit = 0
+        self.moving = False
 
     def update(self, game, *args, **kwargs):
         if self._p != game.p:
@@ -20,9 +30,12 @@ class Enemy(Character):
         if (self.x, self.y) == (game.player.x, game.player.y):
             return
         path = game.world.pathfind(self._p, (self.x, self.y), (game.player.x, game.player.y))
-        if path == None or len(path) < 2:
+        if path == None:
             return
-        dx, dy = path[1][0] - self.x, path[1][1] - self.y
+        if len(path) < 2:
+            dx, dy = game.player.scene_x - self.scene_x, game.player.scene_y - self.scene_y
+        else:
+            dx, dy = path[1][0] - self.x, path[1][1] - self.y
         self.update_pos(game, dx, dy)
         super().update()
     

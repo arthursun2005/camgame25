@@ -1,3 +1,5 @@
+import time
+
 from config import *
 from utils import *
 from ss import *
@@ -6,25 +8,15 @@ from animation import *
 import pygame
 from pygame.locals import *
 
+from character import Character
 
-class Player(pygame.sprite.Sprite):
+
+class Player(Character):
     def __init__(self, x, y, *groups):
-        super().__init__(*groups)
-        self.x = x
-        self.y = y
-        self.scene_x = self.x * TILE_SIZE
-        self.scene_y = self.y * TILE_SIZE
-        self.size = TILE_SIZE * 4
-        self.spe = PLAYER_SPEED * TILE_SIZE / BASE_SIZE
-        
-        self.spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
-        self.image = pygame.transform.scale(self.spritesheet.get_image(0, 0), (self.size, self.size))
+        spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
+        super().__init__(x, y, PLAYER_SPEED, spritesheet, *groups)
 
-        self.rect = pygame.rect.Rect(self.scene_x, self.scene_y, self.size, self.size)
-        self._brect_raw = self.image.get_bounding_rect()
-        self.pady = (self.size - self._brect_raw.height) / 2
-        self.padx = (self.size - self._brect_raw.width) / 2
-        self.brect = self.image.get_bounding_rect()
+        self.hp = 5
         
         sps = self.spritesheet
         self.down = (Animation(sps, 5, [0, 1, 2, 3]), Animation(sps, 5, [0]))
@@ -33,6 +25,14 @@ class Player(pygame.sprite.Sprite):
 
         self.orit = 0
         self.moving = False
+
+        self.last_hit = 0
+    
+    def decrease_hp(self):
+        now = time.time()
+        if now - self.last_hit > HIT_COOLDOWN * 1000:
+            self.hp -= 1
+            self.last_hit = now
     
     def update_keys(self, game, pressed, down):
         dx, dy = 0, 0
@@ -78,28 +78,3 @@ class Player(pygame.sprite.Sprite):
             img = self.down[ii].get_image()
         self.image = pygame.transform.scale(img, (self.size, self.size))
         self.set_brect()
-    
-    def update(self, *args, **kwargs):
-        self.x = int((self.scene_x + self.size / 2) // TILE_SIZE)
-        self.y = int((self.scene_y + (self.size - self.pady)) // TILE_SIZE)
-        self.rect = self.image.get_rect(topleft=(self.scene_x, self.scene_y))
-    
-    def clip_top(self, y):
-        self.scene_y = max(y - self.pady, self.scene_y)
-    
-    def clip_bot(self, y):
-        self.scene_y = min(y - (self.size - self.pady), self.scene_y)
-    
-    def clip_left(self, x):
-        self.scene_x = max(x - self.padx, self.scene_x)
-    
-    def clip_right(self, x):
-        self.scene_x = min(x - (self.size - self.padx), self.scene_x)
-    
-    def set_brect(self):
-        self.brect = pygame.rect.Rect(
-            self.scene_x + self.padx,
-            self.scene_y + self.pady,
-            self._brect_raw.width,
-            self._brect_raw.height
-        )

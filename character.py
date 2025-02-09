@@ -10,21 +10,23 @@ from pygame.locals import *
 class Character(pygame.sprite.Sprite):
     def __init__(self, x, y, speed, spritesheet, *groups):
         super().__init__(*groups)
-        self.x = x
-        self.y = y
-        self.scene_x = self.x * TILE_SIZE
-        self.scene_y = self.y * TILE_SIZE
         self.size = TILE_SIZE * 4
-        self.spe = speed * TILE_SIZE / BASE_SIZE
         
         self.spritesheet = spritesheet
         self.image = pygame.transform.scale(self.spritesheet.get_image(0, 0), (self.size, self.size))
 
-        self.rect = pygame.rect.Rect(self.scene_x, self.scene_y, self.size, self.size)
         self._brect_raw = self.image.get_bounding_rect()
         self.pady = (self.size - self._brect_raw.height) / 2
         self.padx = (self.size - self._brect_raw.width) / 2
         self.brect = self.image.get_bounding_rect()
+
+        self.x = x
+        self.y = y
+        self.scene_x = self.x * TILE_SIZE - self.padx
+        self.scene_y = self.y * TILE_SIZE - self.pady
+        self.spe = speed * TILE_SIZE / BASE_SIZE
+        self.set_brect()
+        self.rect = pygame.rect.Rect(self.scene_x, self.scene_y, self.size, self.size)
         
         sps = self.spritesheet
         self.down = (Animation(sps, 5, [0, 1, 2, 3]), Animation(sps, 5, [0]))
@@ -35,8 +37,8 @@ class Character(pygame.sprite.Sprite):
         self.moving = False
     
     def update(self, *args, **kwargs):
-        self.x = int((self.scene_x + self.size / 2) // TILE_SIZE)
-        self.y = int((self.scene_y + (self.size - self.pady)) // TILE_SIZE)
+        self.x = max(0, min(WORLD_WIDTH * 2 - 1, int((self.scene_x + self.size / 2) // TILE_SIZE)))
+        self.y = max(0, min(WORLD_HEIGHT * 2 - 1, int((self.scene_y + self.size / 2) // TILE_SIZE)))
         self.rect = self.image.get_rect(topleft=(self.scene_x, self.scene_y))
     
     def clip_top(self, y):
