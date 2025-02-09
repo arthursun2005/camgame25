@@ -79,7 +79,7 @@ class Game:
             dy = math.sin(radians)
             rayEnd = (self.player.rect.center[0] + (dx * lightRadius), self.player.rect.center[1] + (dy *lightRadius))
             closest_hit = None
-            for obstacle in self.world.flatten(self.p):
+            for obstacle in self.world.within_dist(self.p,4,self.player.rect.center):
                 if obstacle.full():
                     obRect = obstacle.rect
                     center = Vector2(obRect.center)
