@@ -131,13 +131,13 @@ class Game:
         self.buf = []
         for obj in coll:
             if isinstance(obj, Tile):
-                if obj.isdoor():
-                    if K_1 in down and obj.mode() == 'r':
-                        obj.kill()
-                    if K_2 in down and obj.mode() == 'g':
-                        obj.kill()
-                    if K_3 in down and obj.mode() == 'b':
-                        obj.kill()
+                if K_1 in down and obj.mode() == 'r':
+                    obj.kill()
+                if K_2 in down and obj.mode() == 'g':
+
+                    obj.kill()
+                if K_3 in down and obj.mode() == 'b':
+                    obj.kill()
                 if self.tile_collide(obj):
                     self.player.set_brect()
                     self.buf.append(obj)
@@ -175,6 +175,7 @@ class Game:
         self.buf = []
         self.enemies = pygame.sprite.Group()
         self.spotlights = deque()
+        self.ray = True
         for _ in range(MAX_ENEMIES):
             self.spawn_enemy()
         while running:
@@ -191,6 +192,8 @@ class Game:
                         cell = self.get_cell(self.player.x, self.player.y)
                         if cell.isconn():
                             self.p = cell.conn()
+                    if event.key == K_r:
+                        self.ray = not self.ray
             pressed = pygame.key.get_pressed()
             if pressed[K_g]:
                 self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius + DELTA_LIGHT))
@@ -230,7 +233,8 @@ class Game:
                 self.screen.blit(self.player.image, self.player.rect)
                 #self.spotlight(self.player.rect.center, self.lightRadius)
                 
-                self.cast_light(10, self.lightRadius)
+                if self.ray:
+                    self.cast_light(10, self.lightRadius)
                 self.door_lights()
             
             if debug:

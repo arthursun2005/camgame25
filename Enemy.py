@@ -96,17 +96,22 @@ class Enemy(Character):
             if door != None:
                 if door.mode() == 'R':
                     buffer = np.int16(generate_tune('piano', sec=0.6) * (2**15-1))
+                    buffer = np.tile(buffer[:, None], (1, 2))
+
                     sound = pygame.sndarray.make_sound(buffer)
                     sound.play()
                     pass #TODO: play piano
                 elif door.mode() == 'G':
                     buffer = np.int16(generate_tune('violin', sec=1) * (2**15-1))
+                    buffer = np.tile(buffer[:, None], (1, 2))
                     sound = pygame.sndarray.make_sound(buffer)
                     sound.play()
                     
                     pass #TODO: play violin
                 elif door.mode() == 'B':
                     buffer = np.int16(generate_tune('flute', sec=1) * (2**15-1))
+                    buffer = np.tile(buffer[:, None], (1, 2))
+
                     sound = pygame.sndarray.make_sound(buffer)
                     sound.play()
 
