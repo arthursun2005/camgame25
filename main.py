@@ -79,28 +79,25 @@ class Game:
             dy = math.sin(radians)
             rayEnd = (self.player.rect.center[0] + (dx * lightRadius), self.player.rect.center[1] + (dy *lightRadius))
             closest_hit = None
-            for obstacle in self.world.within_dist(self.p, 8, self.player.rect.center):
+            for obstacle in self.world.within_dist(self.p, 4, (self.player.x,self.player.y)):
                 if obstacle.full():
                     obRect = obstacle.rect
-                    center = Vector2(obRect.center)
-                    obstacleRadius = distance(obRect.topleft,obRect.center)
-                    if (distance(self.player.rect.center,obRect.center) - obstacleRadius) < lightRadius:
-                        for edge in [
-                            (obRect.topleft,obRect.topright),
-                            (obRect.topright,obRect.bottomright),
-                            (obRect.bottomright,obRect.bottomleft),
-                            (obRect.bottomleft,obRect.topleft)]:
-                            hit = line_intersect(self.player.rect.center,rayEnd,edge[0],edge[1])
-                            if hit != None:
-                                if closest_hit is None or distance(self.player.rect.center,hit) < distance(self.player.rect.center,closest_hit):
-                                    closest_hit = hit
+                    for edge in [
+                        (obRect.topleft,obRect.topright),
+                        (obRect.topright,obRect.bottomright),
+                        (obRect.bottomright,obRect.bottomleft),
+                        (obRect.bottomleft,obRect.topleft)]:
+                        hit = line_intersect(self.player.rect.center,rayEnd,edge[0],edge[1])
+                        if hit != None:
+                            if closest_hit is None or distance(self.player.rect.center,hit) < distance(self.player.rect.center,closest_hit):
+                                closest_hit = hit
                         
             collisionPoints.append(closest_hit if closest_hit != None else rayEnd)
         return collisionPoints
     
     def cast_light(self,angleInc,lightRadius):
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
-        filter.fill(pygame.color.Color('Grey'))
+        filter.fill(pygame.color.Color('White'))
         pygame.draw.polygon(filter,(15,15,15,200),self.ray_intersections(angleInc,lightRadius))
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
         for points in self.ray_intersections(angleInc,lightRadius):
@@ -148,7 +145,7 @@ class Game:
     def main(self, debug=False):
         running = True
         self.init_World(genmaze(True))
-        self.lightRadius = 50
+        self.lightRadius = 100
         self.buf = []
         self.enemies = pygame.sprite.Group()
         for _ in range(MAX_ENEMIES):
@@ -178,7 +175,7 @@ class Game:
             self.sprites.update(self)
             if len(self.enemies) < MAX_ENEMIES:
                 self.spawn_enemy()
-            self.set_lightradius(self.player.hp * 10)
+            #self.set_lightradius(self.player.hp * 10)
 
             if not self.title.draw(self.screen):
                 if self.ff:
@@ -195,7 +192,7 @@ class Game:
                     self.screen.blit(enemy.image, enemy.rect)
                 self.screen.blit(self.player.image, self.player.rect)
                 #self.spotlight(self.player.rect.center, self.lightRadius)
-                self.cast_light(10,self.lightRadius)
+                self.cast_light(20,self.lightRadius)
             
             if debug:
                 pygame.draw.rect(self.screen, "red", self.player.brect, width=1)
