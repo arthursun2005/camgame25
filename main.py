@@ -101,13 +101,13 @@ class Game:
     
     def cast_light(self,angleInc,lightRadius):
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
-        # if self.p == 1:
-        #     filter.fill(pygame.Color(255, 255, 255, 100))
-        # if self.p == 2:
-        #     filter.fill(pygame.Color(0, 255, 0, 100))
-        # if self.p == 3:
-        #     filter.fill(pygame.Color(0, 0, 255, 100))
-        filter.fill(pygame.color.Color('White'))
+        if self.p == 0:
+            filter.fill(pygame.Color(200, 255, 255, 100))
+        if self.p == 1:
+            filter.fill(pygame.Color(255, 200, 255, 100))
+        if self.p == 2:
+            filter.fill(pygame.Color(255, 255, 200, 100))
+        # filter.fill(pygame.color.Color('White'))
         pygame.draw.polygon(filter,(0,15,15,200),self.ray_intersections(angleInc,lightRadius))
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
         for points in self.ray_intersections(angleInc,lightRadius):
