@@ -7,7 +7,7 @@ from utils import *
 from title import *
 
 from Player import Player
-from primitives import Tile,World
+from primitives import Tile, World
 
 
 class Game:
@@ -40,7 +40,6 @@ class Game:
 
         self.title = Title()
         self.ff = True
-
     
     def init_World(self, world):
         self.sprites = pygame.sprite.Group()
@@ -52,30 +51,6 @@ class Game:
 
         self.player = Player(1, 1)
         self.sprites.add(self.player)
-    
-    def arrValue(self,item,p):
-        if item == "#":
-            return get_image(self.tileset, 9, 6)
-        elif item == ".":
-            return get_image(self.tileset, 9, 7)
-        elif item == "+":
-            if p == 0:
-                return get_image(self.tileset,9,0)
-            elif p == 1:
-                return get_image(self.tileset,8,0)
-            elif p == 2:
-                return get_image(self.tileset,7,0)
-        elif item == "R":
-            return get_square("red")
-        elif item == "B":
-            return get_square("blue")
-        elif item == "G":
-            return get_square("green")
-        elif item == "Y":
-            return get_square("yellow")
-        else:
-            return get_square("black")
-        #TODO REST OF THE ITEMS, COLORED DOORS, CONNECTION UP, CONNECTION DOWN, ETC.
 
     def get_cell(self, x, y):
         return self.world()[self.p][y][x]
@@ -91,11 +66,28 @@ class Game:
 
         for obstacle in self.world.flatten(self.p):
             if obstacle.full():
-                clip_rect = obstacle.rect().clip(light_rect)
+                clip_rect = obstacle.rect.clip(light_rect)
                 if clip_rect.width > 0 and clip_rect.height > 0:
                     # filter.fill((128,128,128,255),clip_rect)
                     pass
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
+    
+    def get_collision(self, base, sprites):
+        collide = pygame.sprite.spritecollide(base, sprites, dokill=False)
+        return collide
+
+    def tile_collide(self, tile: Tile):
+        if tile.not_wall():
+            return False
+        match tile.get_orient():
+            case Orient.UP:
+                self.player.scene_y = min(tile.rect.top, self.player.scene_y)
+
+    def handle_player_collision(self):
+        coll = self.get_collision(self.player, self.sprites)
+        for obj in coll:
+            if isinstance(obj, Tile):
+                self.tile_collide(obj)
 
     def main(self):
         running = True
@@ -117,8 +109,9 @@ class Game:
                 self.lightRadius = max(1, min(15, self.lightRadius + 0.5))
             if pressed[K_h]:
                 self.lightRadius = max(1, min(15, self.lightRadius - 0.5))
-
+            
             self.sprites.update(self, pressed, down)
+            self.handle_player_collision()
 
             if not self.title.draw(self.screen):
                 if self.ff:
@@ -129,7 +122,7 @@ class Game:
                     self.ff = False
                 for y, row in enumerate(self.world()[self.p]):
                     for x, cell in enumerate(row):
-                        self.screen.blit(cell.image(), cell.rect())
+                        self.screen.blit(cell.image, cell.rect)
                 self.screen.blit(self.player.image, self.player.rect)
                 self.spotlight(self.player.rect.center, self.lightRadius)
 

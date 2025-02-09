@@ -38,8 +38,9 @@ class Tile(pygame.sprite.Sprite):
         self._notwall = mode in ('.', '+', '_')
         self._empty = mode in ('.', '+')
         self._orient = Orient.NONE
-        self._image = self._get_image()
-        self._rect = pygame.rect.Rect(self._x, self._y, TILE_SIZE, TILE_SIZE)
+        self.image = self._get_image()
+        self.rect = self.image.get_rect(topleft=(self._x, self._y))
+        # pygame.rect.Rect(self._x, self._y, TILE_SIZE, TILE_SIZE)
     
     def _get_image(self):
         if self._mode == "#":
@@ -62,13 +63,10 @@ class Tile(pygame.sprite.Sprite):
     def set_orient(self, orient):
         self._orient = orient
         y, x = random.choice(Tile._walls[self._orient])
-        self._image = get_image(self._tileset, x, y)
+        self.image = get_image(self._tileset, x, y)
     
-    def image(self):
-        return self._image
-    
-    def rect(self):
-        return self._rect
+    def get_orient(self):
+        return self._orient
     
     def mode(self):
         return self._mode
