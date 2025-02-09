@@ -54,7 +54,10 @@ class Game:
         self.sprites.add(self.player)
 
     def get_cell(self, x, y):
-        return self.world()[self.p][y][x]
+        try:
+            return self.world()[self.p][y][x]
+        except IndexError:
+            return Tile()
     
     def spotlight(self,pos_tuple,size):
         x,y = pos_tuple
@@ -114,7 +117,9 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     down.add(event.key)
                     if event.key == pygame.K_SPACE:
-                        cell = self.get_cell(self.player.x, self.player.y + 1)
+                        print(self.player.x, self.player.y)
+                        cell = self.get_cell(self.player.x, self.player.y)
+                        print(cell.mode(), cell.isconn())
                         if cell.isconn():
                             self.p = cell.conn()
             pressed = pygame.key.get_pressed()

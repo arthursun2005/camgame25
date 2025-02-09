@@ -3,7 +3,7 @@ from enum import Enum
 FPS = 60
 
 TILE_DEPTH = 16 # size of tile in tile sheet
-TILE_SIZE = 32 # size of tile in game
+TILE_SIZE = 16 # size of tile in game
 
 BASE_SIZE = 32
 
@@ -14,11 +14,13 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720 # karp's screen lmao
 # SCREEN_WIDTH = TILE_SIZE * WORLD_WIDTH
 # SCREEN_HEIGHT = TILE_SIZE * WORLD_HEIGHT
 
+
 DELTA_LIGHT = 0.5
 MIN_LIGHT = 1
 MAX_LIGHT = 25
 
-COLL_THRES = 4
+PLAYER_SPEED = 8
+COLL_THRES = 4 * TILE_SIZE / BASE_SIZE
 
 class Orient(Enum):
     NONE = 0

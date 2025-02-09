@@ -15,7 +15,7 @@ class Player(pygame.sprite.Sprite):
         self.scene_x = self.x * TILE_SIZE
         self.scene_y = self.y * TILE_SIZE
         self.size = TILE_SIZE * 4
-        self.spe = 3 * TILE_SIZE / BASE_SIZE
+        self.spe = PLAYER_SPEED * TILE_SIZE / BASE_SIZE
         
         self.spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
         self.image = pygame.transform.scale(self.spritesheet.get_image(0, 0), (self.size, self.size))
@@ -66,9 +66,6 @@ class Player(pygame.sprite.Sprite):
         self.scene_x = max(-self.padx, min(game.scene_w - (self.size - self.padx), self.scene_x))
         self.scene_y = max(-self.pady, min(game.scene_h - (self.size - self.pady), self.scene_y))
 
-        self.x = int(self.scene_x // TILE_SIZE)
-        self.y = int(self.scene_y // TILE_SIZE)
-
         ii = not self.moving
         if self.orit == 0:
             img = self.right[ii].get_image()
@@ -83,6 +80,8 @@ class Player(pygame.sprite.Sprite):
         self.set_brect()
     
     def update(self):
+        self.x = int((self.scene_x + self.size / 2) // TILE_SIZE)
+        self.y = int((self.scene_y + (self.size - self.pady)) // TILE_SIZE)
         self.rect = self.image.get_rect(topleft=(self.scene_x, self.scene_y))
     
     def clip_top(self, y):
