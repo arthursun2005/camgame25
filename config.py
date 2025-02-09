@@ -31,7 +31,7 @@ MIN_LIFETIME = 7
 MAX_LIFETIME = 20
 
 DOOR_LIGHT = 10 # spotlight
-DOOR_LIGHT_LIFE = 5
+DOOR_LIGHT_LIFE = 4
 
 
 class Orient(Enum):

@@ -254,9 +254,9 @@ class Game:
                     if enemy._p == self.p:
                         self.screen.blit(enemy.image, enemy.rect)
                 self.screen.blit(self.player.image, self.player.rect)
-                #self.spotlight(self.player.rect.center, self.lightRadius)
+                # self.spotlight(self.player.rect.center, self.lightRadius)
                 
-                if self.ray:
+                if self.ray and not self.spotlights:
                     self.cast_light(10, self.lightRadius)
                 self.door_lights()
             
