@@ -184,6 +184,13 @@ class World:
             for cell in row:
                 arr.append(cell)
         return arr
+    
+    def within_dist(self, p, dist, center):
+        cx, cy = center
+        arr = []
+        for y in range(cy - dist, cy + dist + 1):
+            arr.extend(self._world[p][y][cx - dist: cx + dist + 1])
+        return arr
 
     def dim(self):
         return self._ps, self._w, self._h

@@ -137,16 +137,23 @@ class Game:
                 if collision(self.player.brect, obj.brect):
                     self.player.decrease_hp()
 
+    def set_lightradius(self, radius):
+        self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, radius))
+
+    def spawn_enemy(self):
+        x, y = self.world.get_empty_cell(self.p)
+        if (x, y) != (-1, -1):
+            return Enemy(x, y, self.p, self.enemies, self.sprites)
+
     def main(self, debug=False):
         running = True
         self.init_World(genmaze(True))
         self.lightRadius = 50
         self.buf = []
-        self.enemies = []
-        for i in range(NUM_ENEMIES):
-            x, y = self.world.get_empty_cell(self.p)
-            if (x, y) != (-1, -1):
-                self.enemies.append(Enemy(x, y, self.p, self.sprites))
+        self.enemies = pygame.sprite.Group()
+        for _ in range(MAX_ENEMIES):
+            self.spawn_enemy()
+        print(self.world.within_dist(self.p, 3, (5, 5)))
         while running:
             self.screen.fill((30,30,30)) # Used for the lighting
             down = set()
@@ -157,9 +164,7 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     down.add(event.key)
                     if event.key == pygame.K_SPACE:
-                        print(self.player.x, self.player.y)
                         cell = self.get_cell(self.player.x, self.player.y)
-                        print(cell.mode(), cell.isconn())
                         if cell.isconn():
                             self.p = cell.conn()
             pressed = pygame.key.get_pressed()
@@ -168,10 +173,13 @@ class Game:
             if pressed[K_h]:
                 self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius - DELTA_LIGHT))
             
-            a = self.world.pathfind(0, (4, 6), (10, 0))
             self.player.update_keys(self, pressed, down)
             self.handle_player_collision()
+
             self.sprites.update(self)
+            if len(self.enemies) < MAX_ENEMIES:
+                self.spawn_enemy()
+
             if not self.title.draw(self.screen):
                 if self.ff:
                     self.music.stop()
