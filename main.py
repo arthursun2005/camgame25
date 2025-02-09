@@ -49,7 +49,7 @@ class Game:
         self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
         self.p = 0 # current plane
 
-        self.player = Player(1, 1)
+        self.player = Player(3, 3)
         self.sprites.add(self.player)
 
     def get_cell(self, x, y):
@@ -77,11 +77,12 @@ class Game:
         return collide
 
     def tile_collide(self, tile: Tile):
-        if tile.not_wall():
+        if tile.not_wall() or tile._p != self.p:
             return False
         match tile.get_orient():
             case Orient.UP:
                 self.player.scene_y = min(tile.rect.top, self.player.scene_y)
+        return True
 
     def handle_player_collision(self):
         coll = self.get_collision(self.player, self.sprites)

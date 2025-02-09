@@ -121,7 +121,7 @@ class World:
         OrigOrient.RIGHT_T: [Orient.TOPLEFT_IN, Orient.RIGHT, Orient.BOTTOMLEFT_IN, Orient.RIGHT],
         OrigOrient.LEFT_END: [Orient.TOPLEFT_OUT, Orient.UP, Orient.BOTTOMLEFT_OUT, Orient.DOWN],
         OrigOrient.RIGHT_END: [Orient.UP, Orient.TOPRIGHT_OUT, Orient.DOWN, Orient.BOTTOMRIGHT_OUT],
-        OrigOrient.TOP_END: [Orient.TOPLEFT_OUT, Orient.TOPRIGHT_IN, Orient.LEFT, Orient.RIGHT],
+        OrigOrient.TOP_END: [Orient.TOPLEFT_OUT, Orient.TOPRIGHT_OUT, Orient.LEFT, Orient.RIGHT],
         OrigOrient.BOTTOM_END: [Orient.LEFT, Orient.RIGHT, Orient.BOTTOMLEFT_OUT, Orient.BOTTOMRIGHT_OUT],
         OrigOrient.CENTER: [Orient.TOPLEFT_OUT, Orient.TOPRIGHT_OUT, Orient.BOTTOMLEFT_OUT, Orient.BOTTOMRIGHT_OUT],
         OrigOrient.SURROUNDED: [Orient.TOPLEFT_IN, Orient.TOPRIGHT_IN, Orient.BOTTOMLEFT_IN, Orient.BOTTOMRIGHT_IN]
