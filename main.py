@@ -4,6 +4,7 @@ from pygame.locals import *
 from manual import *
 from config import *
 from utils import *
+from title import *
 
 from Player import Player
 from primitives import Tile,World
@@ -12,18 +13,19 @@ from primitives import Tile,World
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
 
         try:
             pygame.mixer.init()
-            self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+            # self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+            self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
             self.music.play(-1)
         except:
             pass
         
-        self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
-        self.light = pygame.image.load("Assets Folder\spotlight.png").convert_alpha()
+        self.tileset = pygame.image.load("Assets Folder/Dungeon_Tileset.png").convert_alpha()
+        self.light = pygame.image.load("Assets Folder/spotlight.png").convert_alpha()
         
         self.world = None
         self.p = None
@@ -35,6 +37,10 @@ class Game:
 
         self.sprites = None
         self.player = None
+
+        self.title = Title()
+        self.ff = True
+
     
     def init_World(self, world):
         self.sprites = pygame.sprite.Group()
@@ -98,6 +104,7 @@ class Game:
         while running:
             down = set()
             for event in pygame.event.get():
+                self.title.process(event)
                 if event.type == QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
@@ -113,11 +120,18 @@ class Game:
 
             self.sprites.update(self, pressed, down)
 
-            for y, row in enumerate(self.world()[self.p]):
-                for x, cell in enumerate(row):
-                    self.screen.blit(cell.image(), cell.rect())
-            self.screen.blit(self.player.image, self.player.rect)
-            self.spotlight(self.player.rect.center, self.lightRadius)
+            if not self.title.draw(self.screen):
+                if self.ff:
+                    self.music.stop()
+                    self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+                    # self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
+                    self.music.play(-1)
+                    self.ff = False
+                for y, row in enumerate(self.world()[self.p]):
+                    for x, cell in enumerate(row):
+                        self.screen.blit(cell.image(), cell.rect())
+                self.screen.blit(self.player.image, self.player.rect)
+                self.spotlight(self.player.rect.center, self.lightRadius)
 
             pygame.display.flip()
             self.clock.tick(FPS)
