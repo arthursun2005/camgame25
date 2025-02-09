@@ -47,6 +47,7 @@ class Game:
 
         self.title = Title()
         self.ff = True
+        self.colour = 'r'
 
     def init_World(self, world):
         self.sprites = pygame.sprite.Group()
@@ -101,11 +102,11 @@ class Game:
     
     def cast_light(self,angleInc,lightRadius):
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
-        if self.p == 0:
+        if self.colour == 'r':
             filter.fill(pygame.Color(200, 255, 255, 100))
-        if self.p == 1:
+        if self.colour == 'g':
             filter.fill(pygame.Color(255, 200, 255, 100))
-        if self.p == 2:
+        if self.colour == 'b':
             filter.fill(pygame.Color(255, 255, 200, 100))
         # filter.fill(pygame.color.Color('White'))
         pygame.draw.polygon(filter,(0,15,15,200),self.ray_intersections(angleInc,lightRadius))
@@ -142,11 +143,9 @@ class Game:
                     obj.kill()
                 if K_2 in down and obj.mode() == 'G':
                     obj._mode = '.'
-
                     obj.kill()
                 if K_3 in down and obj.mode() == 'B':
                     obj._mode = '.'
-
                     obj.kill()
                 if self.tile_collide(obj):
                     self.player.set_brect()
@@ -204,6 +203,15 @@ class Game:
                             self.p = cell.conn()
                     if event.key == K_r:
                         self.ray = not self.ray
+                    if event.key == K_1:
+                        self.colour = 'r'
+                        self.spotlights.clear()
+                    if event.key == K_2:
+                        self.colour = 'g'
+                        self.spotlights.clear()
+                    if event.key == K_3:
+                        self.colour = 'b'
+                        self.spotlights.clear()
             pressed = pygame.key.get_pressed()
             if pressed[K_g]:
                 self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius + DELTA_LIGHT))
