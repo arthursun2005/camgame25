@@ -8,6 +8,7 @@ from title import *
 
 from Player import Player
 from primitives import Tile, World
+from genmaze import genmaze
 
 
 class Game:
@@ -79,21 +80,31 @@ class Game:
     def tile_collide(self, tile: Tile):
         if tile.not_wall() or tile._p != self.p:
             return False
-        match tile.get_orient():
-            case Orient.UP:
-                self.player.scene_y = min(tile.rect.top, self.player.scene_y)
-        return True
+        colls = collision(self.player.brect, tile.rect)
+        if Collision.TOP in colls:
+            self.player.clip_top(tile.rect.bottom)
+        if Collision.BOTTOM in colls:
+            self.player.clip_bot(tile.rect.top)
+        if Collision.LEFT in colls:
+            self.player.clip_left(tile.rect.right)
+        if Collision.RIGHT in colls:
+            self.player.clip_right(tile.rect.left)
+        return Collision.NONE not in colls
 
     def handle_player_collision(self):
         coll = self.get_collision(self.player, self.sprites)
+        self.buf = []
         for obj in coll:
             if isinstance(obj, Tile):
-                self.tile_collide(obj)
+                a = self.tile_collide(obj)
+                if a:
+                    self.buf.append(obj)
 
-    def main(self):
+    def main(self, debug=False):
         running = True
-        self.init_World(MAP)
+        self.init_World(genmaze(True))
         self.lightRadius = 5
+        self.buf = []
         while running:
             down = set()
             for event in pygame.event.get():
@@ -103,17 +114,17 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     down.add(event.key)
                     if event.key == pygame.K_SPACE:
-                        if self.get_cell(self.player.x, self.player.y + 1).mode() == '+':
-                            self.p = (self.p + 1) % self.planes
+                        cell = self.get_cell(self.player.x, self.player.y + 1)
+                        if cell.isconn():
+                            self.p = cell.conn()
             pressed = pygame.key.get_pressed()
             if pressed[K_g]:
                 self.lightRadius = max(1, min(15, self.lightRadius + 0.5))
             if pressed[K_h]:
                 self.lightRadius = max(1, min(15, self.lightRadius - 0.5))
             
-            self.sprites.update(self, pressed, down)
             self.handle_player_collision()
-
+            self.sprites.update(self, pressed, down)
             if not self.title.draw(self.screen):
                 if self.ff:
                     self.music.stop()
@@ -124,12 +135,19 @@ class Game:
                 for y, row in enumerate(self.world()[self.p]):
                     for x, cell in enumerate(row):
                         self.screen.blit(cell.image, cell.rect)
-                self.screen.blit(self.player.image, self.player.rect)
-                self.spotlight(self.player.rect.center, self.lightRadius)
 
+                self.screen.blit(self.player.image, self.player.rect)
+                # self.spotlight(self.player.rect.center, self.lightRadius)
+            
+            if debug:
+                pygame.draw.rect(self.screen, "red", self.player.brect, width=1)
+                pygame.draw.rect(self.screen, "blue", self.player.rect, width=1)
+                for obj in self.buf:
+                    pygame.draw.rect(self.screen, "green", obj.rect, width=1)
+            
             pygame.display.flip()
             self.clock.tick(FPS)
 
 
 game = Game()
-game.main()
+game.main(debug=True)

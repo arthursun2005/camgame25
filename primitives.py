@@ -35,9 +35,13 @@ class Tile(pygame.sprite.Sprite):
         self._mode = mode
         self._tileset = tileset
 
-        self._notwall = mode in ('.', '+', '_')
-        self._empty = mode in ('.', '+')
+        self._isconn = mode in ('0', '1', '2')
+        self._conn = int(mode) if self._isconn else None
+        self._empty = mode == '.' or self._isconn
+        self._notwall = mode in ('.', '_') or self._isconn
+        self._truewall = mode == '#'
         self._orient = Orient.NONE
+        
         self.image = self._get_image()
         self.rect = self.image.get_rect(topleft=(self._x, self._y))
         # pygame.rect.Rect(self._x, self._y, TILE_SIZE, TILE_SIZE)
@@ -47,7 +51,7 @@ class Tile(pygame.sprite.Sprite):
             return get_image(self._tileset, 9, 6)
         elif self._mode == ".":
             return get_image(self._tileset, 9, 7)
-        elif self._mode == "+":
+        elif self._isconn:
             return get_square("white")
         elif self._mode == "R":
             return get_square("red")
@@ -80,12 +84,24 @@ class Tile(pygame.sprite.Sprite):
         return self._empty
     
     def full(self):
-        """Return True if wall tile (excluding invalid tiles)"""
+        """Return True if wall/door tile (excluding invalid tiles)"""
         return not self._notwall
+    
+    def truewall(self):
+        """Return True if actual wall tile"""
+        return self._truewall
 
     def invalid(self):
         """Return True if invalid tile"""
         return self._mode == '_'
+    
+    def isconn(self):
+        """Return True if connection"""
+        return self._isconn
+    
+    def conn(self):
+        """Return index of connected plane"""
+        return self._conn
 
 
 class World:
@@ -130,7 +146,7 @@ class World:
     def __init__(self, world, group=None, tileset=None):
         self._ps, self._w, self._h = len(world), len(world[0][0]) * 2, len(world[0]) * 2
         self._orig = [
-            [[Tile(group, p, j, i, world[p][i][j], tileset) for j in range(self._w // 2)]
+            [[Tile(None, p, j, i, world[p][i][j], tileset) for j in range(self._w // 2)]
              for i in range(self._h // 2)] for p in range(self._ps)
         ]
         self._orig_orient = [[[OrigOrient.NONE for _ in range(len(world[0][0]))]
@@ -147,7 +163,7 @@ class World:
         for p in range(self._ps):
             for y in range(self._h):
                 for x in range(self._w):
-                    if self._world[p][y][x].not_wall():
+                    if not self._world[p][y][x].truewall():
                         continue
                     self._world[p][y][x].set_orient(self._orient_tile(p, x, y))
     

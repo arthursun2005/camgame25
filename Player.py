@@ -10,17 +10,21 @@ from pygame.locals import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, *groups):
         super().__init__(*groups)
-        # self.spritesheet = pygame.image.load("Assets Folder/Dungeon_Character_2.png").convert_alpha()
-        # self.image = get_image(self.spritesheet, 0, 0)
-        self.spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
-        self.image = pygame.transform.scale(self.spritesheet.get_image(0, 0), (TILE_SIZE, TILE_SIZE))
         self.x = x
         self.y = y
         self.scene_x = self.x * TILE_SIZE
         self.scene_y = self.y * TILE_SIZE
-        self.size = TILE_SIZE
+        self.size = TILE_SIZE * 4
         self.spe = 3 * TILE_SIZE / BASE_SIZE
+        
+        self.spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
+        self.image = pygame.transform.scale(self.spritesheet.get_image(0, 0), (self.size, self.size))
+
         self.rect = pygame.rect.Rect(self.scene_x, self.scene_y, self.size, self.size)
+        self._brect_raw = self.image.get_bounding_rect()
+        self.pady = (self.size - self._brect_raw.height) / 2
+        self.padx = (self.size - self._brect_raw.width) / 2
+        self.brect = self.image.get_bounding_rect()
         
         sps = self.spritesheet
         self.down = (Animation(sps, 5, [0, 1, 2, 3]), Animation(sps, 5, [0]))
@@ -59,8 +63,8 @@ class Player(pygame.sprite.Sprite):
         elif dy > 0:
             self.orit = 3
 
-        self.scene_x = max(0, min(game.scene_w - self.size, self.scene_x))
-        self.scene_y = max(0, min(game.scene_h - self.size, self.scene_y))
+        self.scene_x = max(-self.padx, min(game.scene_w - (self.size - self.padx), self.scene_x))
+        self.scene_y = max(-self.pady, min(game.scene_h - (self.size - self.pady), self.scene_y))
 
         self.x = int(self.scene_x // TILE_SIZE)
         self.y = int(self.scene_y // TILE_SIZE)
@@ -75,6 +79,24 @@ class Player(pygame.sprite.Sprite):
             img = pygame.transform.flip(img, 1, 0)
         if self.orit == 3:
             img = self.down[ii].get_image()
-        self.image = pygame.transform.scale(img, (TILE_SIZE * 2, TILE_SIZE * 2))
-        # self.rect = pygame.rect.Rect(self.scene_x, self.scene_y, self.size, self.size)
-        self.rect = self.image.get_rect(center=(self.scene_x, self.scene_y))
+        self.image = pygame.transform.scale(img, (self.size, self.size))
+       
+        self.brect = pygame.rect.Rect(
+            self.scene_x + self.padx,
+            self.scene_y + self.pady,
+            self._brect_raw.width,
+            self._brect_raw.height
+        )
+        self.rect = self.image.get_rect(topleft=(self.scene_x, self.scene_y))
+    
+    def clip_top(self, y):
+        self.scene_y = max(y - self.pady, self.scene_y)
+    
+    def clip_bot(self, y):
+        self.scene_y = min(y - (self.size - self.pady), self.scene_y)
+    
+    def clip_left(self, x):
+        self.scene_x = max(x - self.padx, self.scene_x)
+    
+    def clip_right(self, x):
+        self.scene_x = min(x - (self.size - self.padx), self.scene_x)
