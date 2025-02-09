@@ -26,7 +26,7 @@ class Game:
             pygame.mixer.init()
             # self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
             self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
-            self.music.set_volume(0.2)
+            self.music.set_volume(0.35)
             self.music.play(-1)
         except:
             pass
@@ -179,9 +179,9 @@ class Game:
 
     def main(self, debug=False):
         running = True
-        self.init_World(genmaze(True))
-        self.lightRadius = 100
+        self.init_World(genmaze(False)) # !!
         self.buf = []
+        self.lightRadius = 100
         self.enemies = pygame.sprite.Group()
         self.spotlights = deque()
         self.ray = True
