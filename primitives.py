@@ -40,8 +40,8 @@ class Tile(pygame.sprite.Sprite):
         self._isdoor = mode in ('R', 'G', 'B')
         self._isconn = mode in ('0', '1', '2')
         self._conn = int(mode) if self._isconn else None
-        self._empty = mode == '.' or self._isconn
-        self._notwall = mode in ('.', '_') or self._isconn
+        self._empty = mode in ('.', 'r', 'g', 'b') or self._isconn
+        self._notwall = mode in ('.', 'r', 'g', 'b', '_') or self._isconn
         self._truewall = mode == '#'
         self._orient = Orient.NONE
         
@@ -52,7 +52,7 @@ class Tile(pygame.sprite.Sprite):
     def _get_image(self):
         if self._mode == "#":
             return get_image(self._tileset, 9, 6)
-        elif self._mode == ".":
+        elif self._mode in ('.', 'r', 'g', 'b'):
             return get_image(self._tileset, 9, 7)
         elif self._isconn:
             return get_square("white")

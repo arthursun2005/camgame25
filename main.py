@@ -26,7 +26,7 @@ class Game:
             pygame.mixer.init()
             # self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
             self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
-            self.music.set_volume(0.2)
+            self.music.set_volume(0.35)
             self.music.play(-1)
         except:
             pass
@@ -57,7 +57,7 @@ class Game:
         self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
         self.p = 0 # current plane
 
-        self.player = Player(4, 6)
+        self.player = Player(0, 0)
         self.sprites.add(self.player)
 
     def get_cell(self, x, y):
@@ -179,9 +179,9 @@ class Game:
 
     def main(self, debug=False):
         running = True
-        self.init_World(genmaze(False))
-        self.lightRadius = 100
+        self.init_World(genmaze(True)) # !!
         self.buf = []
+        self.lightRadius = 100
         self.enemies = pygame.sprite.Group()
         self.spotlights = deque()
         self.ray = True
