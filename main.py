@@ -79,7 +79,7 @@ class Game:
             dy = math.sin(radians)
             rayEnd = (self.player.rect.center[0] + (dx * lightRadius), self.player.rect.center[1] + (dy *lightRadius))
             closest_hit = None
-            for obstacle in self.world.within_dist(self.p,4,self.player.rect.center):
+            for obstacle in self.world.within_dist(self.p, 8, self.player.rect.center):
                 if obstacle.full():
                     obRect = obstacle.rect
                     center = Vector2(obRect.center)
@@ -153,7 +153,6 @@ class Game:
         self.enemies = pygame.sprite.Group()
         for _ in range(MAX_ENEMIES):
             self.spawn_enemy()
-        print(self.world.within_dist(self.p, 3, (5, 5)))
         while running:
             self.screen.fill((30,30,30)) # Used for the lighting
             down = set()
