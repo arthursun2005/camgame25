@@ -179,7 +179,7 @@ def add_walls_2d(grid, start):
                 distrib.extend([(i, j)] * min(3 * n, dist[i][j]))
     
     # Change this constant if you want
-    WALLS = 5
+    WALLS = 20
     for _ in range(WALLS):
         wall = random.choice(distrib)
         col = "RGB"[random.randrange(3)]

@@ -10,6 +10,8 @@ from character import Character
 from ss import Spritesheet
 from animation import Animation
 
+from tone import generate_tone
+
 
 class Enemy(Character):
     def __init__(self, x, y, p, *groups):
@@ -89,6 +91,18 @@ class Enemy(Character):
         self.hp -= 1
         if self.hp <= 0:
             door = game.world.closest_door(self._p, (self.x, self.y))
+            
             if door != None:
+                if door.mode() == 'R':
+                    generate_tone(600, 2, 'piano')
+                    pass #TODO: play piano
+                elif door.mode() == 'G':
+                    generate_tone(600, 2, 'violin')
+                    
+                    pass #TODO: play violin
+                elif door.mode() == 'B':
+                    generate_tone(600, 2, 'flute')
+
+                    pass #TODO: play flute
                 game.cursl = door
             self.kill()

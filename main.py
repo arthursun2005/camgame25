@@ -46,7 +46,7 @@ class Game:
 
         self.title = Title()
         self.ff = True
-    
+
     def init_World(self, world):
         self.sprites = pygame.sprite.Group()
         self.world = World(world, self.sprites, self.tileset)
@@ -67,7 +67,7 @@ class Game:
     def spotlight(self,pos_tuple,size):
         x,y = pos_tuple
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
-        filter.fill(pygame.color.Color('white'))
+        filter.fill(pygame.color.Color('grey'))
         scaled_light = pygame.transform.scale(self.light,(self.light.get_width() * size,self.light.get_height() * size))
         sclight_width, sclight_height = scaled_light.get_size()
         light_rect = pygame.Rect(x-(sclight_width/2),y-(sclight_height/2),sclight_width,sclight_height)
@@ -82,27 +82,25 @@ class Game:
             dy = math.sin(radians)
             rayEnd = (self.player.rect.center[0] + (dx * lightRadius), self.player.rect.center[1] + (dy *lightRadius))
             closest_hit = None
-            for obstacle in self.world.within_dist(self.p, 8, self.player.rect.center):
+            for obstacle in self.world.within_dist(self.p, 4, (self.player.x,self.player.y)):
                 if obstacle.full():
                     obRect = obstacle.rect
-                    center = Vector2(obRect.center)
-                    obstacleRadius = distance(obRect.topleft,obRect.center)
-                    if (distance(self.player.rect.center,obRect.center) - obstacleRadius) < lightRadius:
-                        for edge in [
-                            (obRect.topleft,obRect.topright),
-                            (obRect.topright,obRect.bottomright),
-                            (obRect.bottomright,obRect.bottomleft),
-                            (obRect.bottomleft,obRect.topleft)]:
-                            hit = line_intersect(self.player.rect.center,rayEnd,edge[0],edge[1])
-                            if hit != None:
-                                if closest_hit is None or distance(self.player.rect.center,hit) < distance(self.player.rect.center,closest_hit):
-                                    closest_hit = hit
+                    for edge in [
+                        (obRect.topleft,obRect.topright),
+                        (obRect.topright,obRect.bottomright),
+                        (obRect.bottomright,obRect.bottomleft),
+                        (obRect.bottomleft,obRect.topleft)]:
+                        hit = line_intersect(self.player.rect.center,rayEnd,edge[0],edge[1])
+                        if hit != None:
+                            if closest_hit is None or distance(self.player.rect.center,hit) < distance(self.player.rect.center,closest_hit):
+                                closest_hit = hit
                         
             collisionPoints.append(closest_hit if closest_hit != None else rayEnd)
         return collisionPoints
     
     def cast_light(self,angleInc,lightRadius):
         filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
+        filter.fill(pygame.color.Color('White'))
         filter.fill(pygame.color.Color('White'))
         pygame.draw.polygon(filter,(15,15,15,200),self.ray_intersections(angleInc,lightRadius))
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
@@ -133,6 +131,13 @@ class Game:
         self.buf = []
         for obj in coll:
             if isinstance(obj, Tile):
+                if obj.isdoor():
+                    if K_1 in down and obj.mode() == 'r':
+                        obj = Tile(mode='.')
+                    if K_2 in down and obj.mode() == 'g':
+                        obj = Tile(mode='.')
+                    if K_3 in down and obj.mode() == 'b':
+                        obj = Tile(mode='.')
                 if self.tile_collide(obj):
                     self.player.set_brect()
                     self.buf.append(obj)
@@ -157,14 +162,16 @@ class Game:
             if time.time() - tm > DOOR_LIGHT_LIFE:
                 lights_to_kill += 1
             else:
+                # for cell in self.world.within_dist(self.p, 1, (light._x // TILE_SIZE, light._y // TILE_SIZE)):
+                #     self.screen.blit(cell.image, cell.rect)
                 self.spotlight((light._x, light._y), DOOR_LIGHT)
         for light in range(lights_to_kill):
             self.spotlights.popleft()
 
     def main(self, debug=False):
         running = True
-        self.init_World(genmaze(True))
-        self.lightRadius = 50
+        self.init_World(genmaze(False))
+        self.lightRadius = 100
         self.buf = []
         self.enemies = pygame.sprite.Group()
         self.spotlights = deque()
