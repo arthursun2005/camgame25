@@ -11,6 +11,7 @@ from ss import Spritesheet
 from animation import Animation
 
 from tone import generate_tune
+import numpy as np
 
 
 class Enemy(Character):
@@ -94,14 +95,20 @@ class Enemy(Character):
             
             if door != None:
                 if door.mode() == 'R':
-                    generate_tune('piano', sec=2, )
+                    buffer = np.int16(generate_tune('piano', sec=0.6) * (2**15-1))
+                    sound = pygame.sndarray.make_sound(buffer)
+                    sound.play()
                     pass #TODO: play piano
                 elif door.mode() == 'G':
-                    generate_tune('violin', sec=2, )
+                    buffer = np.int16(generate_tune('violin', sec=1) * (2**15-1))
+                    sound = pygame.sndarray.make_sound(buffer)
+                    sound.play()
                     
                     pass #TODO: play violin
                 elif door.mode() == 'B':
-                    generate_tune('flute', sec=2, )
+                    buffer = np.int16(generate_tune('flute', sec=1) * (2**15-1))
+                    sound = pygame.sndarray.make_sound(buffer)
+                    sound.play()
 
                     pass #TODO: play flute
                 game.cursl = door

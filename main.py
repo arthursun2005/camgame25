@@ -133,11 +133,11 @@ class Game:
             if isinstance(obj, Tile):
                 if obj.isdoor():
                     if K_1 in down and obj.mode() == 'r':
-                        obj = Tile(mode='.')
+                        obj.kill()
                     if K_2 in down and obj.mode() == 'g':
-                        obj = Tile(mode='.')
+                        obj.kill()
                     if K_3 in down and obj.mode() == 'b':
-                        obj = Tile(mode='.')
+                        obj.kill()
                 if self.tile_collide(obj):
                     self.player.set_brect()
                     self.buf.append(obj)
