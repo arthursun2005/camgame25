@@ -19,7 +19,8 @@ class Tile(pygame.sprite.Sprite):
         Orient.BOTTOMRIGHT_OUT: [(0, 1), (0, 2), (0, 3), (0, 4)],
         Orient.BOTTOMLEFT_OUT: [(0, 1), (0, 2), (0, 3), (0, 4)],
         Orient.TOPRIGHT_OUT: [(5, 3), (5, 5)],
-        Orient.TOPLEFT_OUT: [(5, 0), (5, 4)]
+        Orient.TOPLEFT_OUT: [(5, 0), (5, 4)],
+        Orient.SURROUNDED: [(7, 8)]
     }
 
     def __init__(self, group=None, plane=0, x=0, y=0, mode='_', tileset=None):
@@ -166,6 +167,12 @@ class World:
                     if not self._world[p][y][x].truewall():
                         continue
                     self._world[p][y][x].set_orient(self._orient_tile(p, x, y))
+        for p in range(self._ps):
+            for y in range(self._h):
+                for x in range(self._w):
+                    if not self._world[p][y][x].truewall():
+                        continue
+                    self._orient_surrounded(p, x, y)
     
     def __call__(self, *args, **kwds):
         return self._world
@@ -181,11 +188,11 @@ class World:
         return self._ps, self._w, self._h
     
     def _get_adj(self, plane, x, y):
-        dx = (0, 0, -1, 1)
-        dy = (-1, 1, 0, 0)
-        wmap = ('U', 'D', 'L', 'R')
+        dx = (0, 0, -1, 1, -1, -1, 1, 1)
+        dy = (-1, 1, 0, 0, -1, 1, -1, 1)
+        wmap = ('U', 'D', 'L', 'R', 'UL', 'UR', 'DL', 'DR')
         adj = {}
-        for i in range(4):
+        for i in range(len(dx)):
             nx, ny = x + dx[i], y + dy[i]
             if nx < 0 or nx >= len(plane[0]) or ny < 0 or ny >= len(plane):
                 adj[wmap[i]] = Tile()
@@ -194,7 +201,11 @@ class World:
         return adj
     
     def _adj_orig_format(self, adj):
-        return tuple([a.full() for a in adj.values()])
+        arr = []
+        for a in adj:
+            if a in ('U', 'D', 'L', 'R'):
+                arr.append(adj[a].full())
+        return tuple(arr)
 
     def _orient_orig(self, plane, x, y):
         adj = self._adj_orig_format(self._get_adj(plane, x, y))
@@ -207,3 +218,8 @@ class World:
         orig_orient = self._orig_orient[p][ty][tx]
         world_orient = World._orig_to_world[orig_orient][tile_pos]
         return world_orient
+    
+    def _orient_surrounded(self, p, x, y):
+        adj = self._get_adj(self._world[p], x, y)
+        if all([a.full() for a in adj.values()]):
+            self._world[p][y][x].set_orient(Orient.SURROUNDED)

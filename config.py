@@ -34,6 +34,7 @@ class Orient(Enum):
     TOPRIGHT_OUT = 10
     BOTTOMLEFT_OUT = 11
     BOTTOMRIGHT_OUT = 12
+    SURROUNDED = 13
 
 
 class OrigOrient(Enum):
