@@ -188,8 +188,8 @@ class World:
     def within_dist(self, p, dist, center):
         cx, cy = center
         arr = []
-        for y in range(cy - dist, cy + dist + 1):
-            arr.extend(self._world[p][y][cx - dist: cx + dist + 1])
+        for y in range(max(0, cy - dist), min(self._h - 1, cy + dist + 1)):
+            arr.extend(self._world[p][y][max(0, cx - dist): min(self._w - 1, cx + dist + 1)])
         return arr
 
     def dim(self):
@@ -224,7 +224,28 @@ class World:
             res.append((x, y))
         res.reverse()
         return res
-        
+
+    def closest_door(self, p, src):
+        dx = (0, 0, -1, 1)
+        dy = (-1, 1, 0, 0)
+        q = deque()
+        d = [[1e9+7 for _ in range(self._w)] for _ in range(self._h)]
+        par = [[(0, 0) for _ in range(self._w)] for _ in range(self._h)]
+        q.append((src[1], src[0]))
+        d[src[1]][src[0]] = 0
+        while q:
+            y, x = q.popleft()
+            for i in range(4):
+                nx, ny = x + dx[i], y + dy[i]
+                if nx < 0 or nx >= self._w or ny < 0 or ny >= self._h:
+                    continue
+                if not self._world[p][ny][nx].empty():
+                    continue
+                if d[y][x] + 1 < d[ny][nx]:
+                    d[ny][nx] = d[y][x] + 1
+                    par[ny][nx] = (x, y)
+                    q.append((ny, nx))
+
     def get_empty_cell(self, p):
         calls = 0
         while calls < 1000:
