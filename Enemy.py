@@ -1,4 +1,5 @@
 import random
+import time
 
 import pygame
 
@@ -24,18 +25,24 @@ class Enemy(Character):
         self.orit = 0
         self.moving = False
 
+        self.last_check = time.time()
+        self.lifetime = random.randint(MIN_LIFETIME, MAX_LIFETIME)
+
     def update(self, game, *args, **kwargs):
+        if time.time() - self.last_check > self.lifetime * 1000:
+            self.kill()
         if self._p != game.p:
             return
         if (self.x, self.y) == (game.player.x, game.player.y):
             return
         path = game.world.pathfind(self._p, (self.x, self.y), (game.player.x, game.player.y))
-        if path == None:
+        if path == None or len(path) > MAX_AGGRO:
             return
         if len(path) < 2:
             dx, dy = game.player.scene_x - self.scene_x, game.player.scene_y - self.scene_y
         else:
             dx, dy = path[1][0] - self.x, path[1][1] - self.y
+        self.last_check = time.time()
         self.update_pos(game, dx, dy)
         super().update()
     
