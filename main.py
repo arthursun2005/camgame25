@@ -114,9 +114,9 @@ class Game:
                             self.p = (self.p + 1) % self.planes
             pressed = pygame.key.get_pressed()
             if pressed[K_g]:
-                self.lightRadius += 0.5
+                self.lightRadius = max(1, min(15, self.lightRadius + 0.5))
             if pressed[K_h]:
-                self.lightRadius -= 0.5
+                self.lightRadius = max(1, min(15, self.lightRadius - 0.5))
 
             self.sprites.update(self, pressed, down)
 
