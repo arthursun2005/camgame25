@@ -38,16 +38,13 @@ class Game:
 
     
     def init_World(self, world):
-        self.planes, self.width, self.height = len(world), len(world[0]), len(world[0][0])
+        self.sprites = pygame.sprite.Group()
+        self.world = World(world, self.sprites, self.tileset)
+        self.planes, self.width, self.height = self.world.dim()
+        
         self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
-
-        self.world = [
-            [[Tile(self.arrValue(world[p][i][j],p), j, i, world[p][i][j]) for j in range(self.height)]
-             for i in range(self.width)] for p in range(self.planes)
-        ]
         self.p = 0 # current plane
 
-        self.sprites = pygame.sprite.Group()
         self.player = Player(1, 1)
         self.sprites.add(self.player)
     
@@ -86,9 +83,9 @@ class Game:
         sclight_width, sclight_height = scaled_light.get_size()
         light_rect = pygame.Rect(x-(sclight_width/2),y-(sclight_height/2),sclight_width,sclight_height)
         filter.blit(scaled_light,(x-(sclight_width / 2),y-(sclight_height/2),sclight_width,sclight_height))
-        for obstacle in self.world:
+        for obstacle in self.world.flatten(self.p):
             if obstacle.full():
-                clip_rect = obstacle.rect.clip(light_rect)
+                clip_rect = obstacle.rect().clip(light_rect)
                 if clip_rect.width > 0 and clip_rect.height > 0:
                     filter.fill((128,128,128,255),clip_rect)
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
@@ -115,7 +112,7 @@ class Game:
 
             self.sprites.update(self, pressed, down)
 
-            for y, row in enumerate(self.world[self.p]):
+            for y, row in enumerate(self.world()[self.p]):
                 for x, cell in enumerate(row):
                     self.screen.blit(cell.image(), cell.rect())
             self.screen.blit(self.player.image, self.player.rect)
