@@ -21,6 +21,7 @@ class Game:
             pygame.mixer.init()
             # self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
             self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
+            self.music.set_volume(0.2)
             self.music.play(-1)
         except:
             pass
@@ -135,6 +136,7 @@ class Game:
                 if self.ff:
                     self.music.stop()
                     self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+                    self.music.set_volume(0.2)
                     # self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
                     self.music.play(-1)
                     self.ff = False
