@@ -188,8 +188,8 @@ class World:
     def within_dist(self, p, dist, center):
         cx, cy = center
         arr = []
-        for y in range(max(0, cy - dist), min(self._h - 1, cy + dist + 1)):
-            arr.extend(self._world[p][y][max(0, cx - dist): min(self._w - 1, cx + dist + 1)])
+        for y in range(max(0, cy - dist), min(self._h, cy + dist + 1)):
+            arr.extend(self._world[p][y][max(0, cx - dist): min(self._w, cx + dist + 1)])
         return arr
 
     def dim(self):
