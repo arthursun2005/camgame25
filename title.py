@@ -13,7 +13,7 @@ class Title:
         self.buttons = []
         tt = ['play', 'credits', 'settings']
         for i in range(3):
-            self.buttons.append(Button(SCREEN_WIDTH / 2, 660 + i * 150, 300, 150, tt[i], i))
+            self.buttons.append(Button(tt[i], i, SCREEN_WIDTH / 2, 660 + i * 150, 300, 150))
         self.ongame = False
 
     def process(self, e):

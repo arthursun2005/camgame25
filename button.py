@@ -27,8 +27,9 @@ CC = [
 ]
 
 class Button:
-    def __init__(self, x, y, w, h, text, c):
-        self.aabb = AABB(x - w/2, x + w/2, y - h/2, y + h/2)
+    def __init__(self, text, c, x=None, y=None, w=None, h=None):
+        if x:
+            self.aabb = AABB(x - w/2, x + w/2, y - h/2, y + h/2)
         self.ss = pygame.image.load("Assets Folder/bar.png").convert_alpha()
         font = pygame.font.Font('Assets Folder/font.ttf', 96)
         self.image = font.render(text, True, (255, 255, 255))
