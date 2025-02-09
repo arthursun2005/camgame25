@@ -1,4 +1,5 @@
 import pygame
+import math
 from pygame.locals import *
 
 from manual import *
@@ -83,19 +84,51 @@ class Game:
         sclight_width, sclight_height = scaled_light.get_size()
         light_rect = pygame.Rect(x-(sclight_width/2),y-(sclight_height/2),sclight_width,sclight_height)
         filter.blit(scaled_light,(x-(sclight_width / 2),y-(sclight_height/2),sclight_width,sclight_height))
-        
-        for obstacle in self.world.flatten(self.p):
-            if obstacle.full():
-                clip_rect = obstacle.rect.clip(light_rect)
-                if clip_rect.width > 0 and clip_rect.height > 0:
-                    filter.fill((128,128,128,255),clip_rect)
         self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
+    
+    def ray_intersections(self,angleInc,lightRadius):
+        collisionPoints = []
+        for angle in range(0,360,angleInc):
+            radians = math.radians(angle)
+            dx = math.cos(radians)
+            dy = math.sin(radians)
+            rayEnd = (self.player.rect.center[0] + (dx * lightRadius), self.player.rect.center[1] + (dy *lightRadius))
+            closest_hit = None
+            for obstacle in self.world.flatten(self.p):
+                if obstacle.full():
+                    obRect = obstacle.rect()
+                    center = Vector2(obRect.center)
+                    obstacleRadius = distance(obRect.topleft,obRect.center)
+                    if (distance(self.player.rect.center,obRect.center) - obstacleRadius) < lightRadius:
+                        for edge in [
+                            (obRect.topleft,obRect.topright),
+                            (obRect.topright,obRect.bottomright),
+                            (obRect.bottomright,obRect.bottomleft),
+                            (obRect.bottomleft,obRect.topleft)]:
+                            hit = line_intersect(self.player.rect.center,rayEnd,edge[0],edge[1])
+                            if hit != None:
+                                if closest_hit is None or distance(self.player.rect.center,hit) < distance(self.player.rect.center,closest_hit):
+                                    closest_hit = hit
+                            
+            collisionPoints.append(closest_hit if closest_hit != None else rayEnd)
+        return collisionPoints
+    
+    def cast_light(self,angleInc,lightRadius):
+        filter = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.SRCALPHA)
+        filter.fill(pygame.color.Color('Grey'))
+        pygame.draw.polygon(filter,(15,15,15,200),self.ray_intersections(angleInc,lightRadius))
+        self.screen.blit(filter,(0,0),special_flags=pygame.BLEND_RGBA_SUB)
+        for points in self.ray_intersections(angleInc,lightRadius):
+             pygame.draw.circle(self.screen, (255, 0, 0), points, 1)
+
+
 
     def main(self):
         running = True
         self.init_World(MAP)
-        self.lightRadius = 5
+        self.lightRadius = 50
         while running:
+            self.screen.fill((30,30,30)) # Used for the lighting
             down = set()
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -113,11 +146,12 @@ class Game:
 
             self.sprites.update(self, pressed, down)
 
-            for y, row in enumerate(self.world[self.p]):
+            for y, row in enumerate(self.world()[self.p]):
                 for x, cell in enumerate(row):
                     self.screen.blit(cell.image(), cell.rect())
             self.screen.blit(self.player.image, self.player.rect)
-            self.spotlight(self.player.rect.center, self.lightRadius)
+            #self.spotlight(self.player.rect.center, self.lightRadius)
+            self.cast_light(10,self.lightRadius)
 
             pygame.display.flip()
             self.clock.tick(FPS)
