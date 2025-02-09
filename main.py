@@ -78,7 +78,7 @@ class Game:
         #TODO REST OF THE ITEMS, COLORED DOORS, CONNECTION UP, CONNECTION DOWN, ETC.
 
     def get_cell(self, x, y):
-        return self.world[self.p][y][x]
+        return self.world()[self.p][y][x]
     
     def spotlight(self,pos_tuple,size):
         x,y = pos_tuple
@@ -113,9 +113,9 @@ class Game:
                         if self.get_cell(self.player.x, self.player.y + 1).mode() == '+':
                             self.p = (self.p + 1) % self.planes
             pressed = pygame.key.get_pressed()
-            if pressed[K_a]:
+            if pressed[K_g]:
                 self.lightRadius += 0.5
-            if pressed[K_b]:
+            if pressed[K_h]:
                 self.lightRadius -= 0.5
 
             self.sprites.update(self, pressed, down)

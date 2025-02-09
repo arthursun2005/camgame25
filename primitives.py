@@ -62,7 +62,6 @@ class Tile(pygame.sprite.Sprite):
     def set_orient(self, orient):
         self._orient = orient
         y, x = random.choice(Tile._walls[self._orient])
-        print((x, y), end=" ")
         self._image = get_image(self._tileset, x, y)
     
     def image(self):
@@ -194,24 +193,3 @@ class World:
         orig_orient = self._orig_orient[p][ty][tx]
         world_orient = World._orig_to_world[orig_orient][tile_pos]
         return world_orient
-
-        # if all([a.empty() for a in adj.values()]):
-        #     return Orient.CENTER
-        # if adj[0].invalid() and adj[1].empty():
-        #     return Orient.UP
-        # if adj[0].empty() and adj[1].invalid():
-        #     return Orient.DOWN
-        # if adj[2].invalid() and adj[3].empty():
-        #     return Orient.LEFT
-        # if adj[2].empty() and adj[3].invalid():
-        #     return Orient.RIGHT
-        # if not adj[1].not_wall() and not adj[3].not_wall():
-        #     return Orient.TOPLEFT
-        # if not adj[1].not_wall() and not adj[2].not_wall():
-        #     return Orient.TOPRIGHT
-        # if not adj[0].not_wall() and not adj[3].not_wall():
-        #     return Orient.BOTTOMLEFT
-        # if not adj[0].not_wall() and not adj[2].not_wall():
-        #     return Orient.BOTTOMRIGHT
-        # return Orient.UP
-
