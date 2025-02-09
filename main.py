@@ -179,7 +179,7 @@ class Game:
 
     def main(self, debug=False):
         running = True
-        self.init_World(genmaze(True))
+        self.init_World(genmaze(False))
         self.lightRadius = 100
         self.buf = []
         self.enemies = pygame.sprite.Group()
