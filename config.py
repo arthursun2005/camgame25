@@ -1,17 +1,30 @@
 from enum import Enum
 
-
 FPS = 60
 
 TILE_DEPTH = 16 # size of tile in tile sheet
-TILE_SIZE = 32 # size of tile in game
+TILE_SIZE = 16 # size of tile in game
 
 BASE_SIZE = 32
 
 WORLD_WIDTH = 16
 WORLD_HEIGHT = 16
-SCREEN_WIDTH = TILE_SIZE * WORLD_WIDTH
-SCREEN_HEIGHT = TILE_SIZE * WORLD_HEIGHT
+SCREEN_WIDTH, SCREEN_HEIGHT = 1920, 1200 # arthur's screen lmao
+SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720 # karp's screen lmao
+# SCREEN_WIDTH = TILE_SIZE * WORLD_WIDTH
+# SCREEN_HEIGHT = TILE_SIZE * WORLD_HEIGHT
+
+
+DELTA_LIGHT = 0.5
+MIN_LIGHT = 1
+MAX_LIGHT = 25
+
+PLAYER_SPEED = 3
+COLL_THRES = 4 * TILE_SIZE / BASE_SIZE
+HIT_COOLDOWN = 2
+
+NUM_ENEMIES = 10
+ENEMY_SPEED = 2
 
 
 class Orient(Enum):
@@ -20,11 +33,15 @@ class Orient(Enum):
     DOWN = 2
     LEFT = 3
     RIGHT = 4
-    TOPLEFT = 5
-    TOPRIGHT = 6
-    BOTTOMLEFT = 7
-    BOTTOMRIGHT = 8
-    CENTER = 9
+    TOPLEFT_IN = 5
+    TOPRIGHT_IN = 6
+    BOTTOMLEFT_IN = 7
+    BOTTOMRIGHT_IN = 8
+    TOPLEFT_OUT = 9
+    TOPRIGHT_OUT = 10
+    BOTTOMLEFT_OUT = 11
+    BOTTOMRIGHT_OUT = 12
+    SURROUNDED = 13
 
 
 class OrigOrient(Enum):
@@ -46,3 +63,10 @@ class OrigOrient(Enum):
     BOTTOM_END = 17
     SURROUNDED = 18
 
+
+class Collision(Enum):
+    NONE = 0
+    TOP = 1
+    BOTTOM = 2
+    LEFT = 3
+    RIGHT = 4

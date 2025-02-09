@@ -5,26 +5,30 @@ from pygame.locals import *
 from manual import *
 from config import *
 from utils import *
+from title import *
 
 from Player import Player
-from primitives import Tile,World
+from Enemy import Enemy
+from primitives import Tile, World
+from genmaze import genmaze
 
 
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
 
         try:
             pygame.mixer.init()
-            self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+            # self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+            self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
             self.music.play(-1)
         except:
             pass
         
-        self.tileset = pygame.image.load("Assets Folder\Dungeon_Tileset.png").convert_alpha()
-        self.light = pygame.image.load("Assets Folder\spotlight.png").convert_alpha()
+        self.tileset = pygame.image.load("Assets Folder/Dungeon_Tileset.png").convert_alpha()
+        self.light = pygame.image.load("Assets Folder/spotlight.png").convert_alpha()
         
         self.world = None
         self.p = None
@@ -37,6 +41,8 @@ class Game:
         self.sprites = None
         self.player = None
 
+        self.title = Title()
+        self.ff = True
     
     def init_World(self, world):
         self.sprites = pygame.sprite.Group()
@@ -46,35 +52,14 @@ class Game:
         self.scene_w, self.scene_h = self.width * TILE_SIZE, self.height * TILE_SIZE
         self.p = 0 # current plane
 
-        self.player = Player(1, 1)
+        self.player = Player(4, 6)
         self.sprites.add(self.player)
-    
-    def arrValue(self,item,p):
-        if item == "#":
-            return get_image(self.tileset, 9, 6)
-        elif item == ".":
-            return get_image(self.tileset, 9, 7)
-        elif item == "+":
-            if p == 0:
-                return get_image(self.tileset,9,0)
-            elif p == 1:
-                return get_image(self.tileset,8,0)
-            elif p == 2:
-                return get_image(self.tileset,7,0)
-        elif item == "R":
-            return get_square("red")
-        elif item == "B":
-            return get_square("blue")
-        elif item == "G":
-            return get_square("green")
-        elif item == "Y":
-            return get_square("yellow")
-        else:
-            return get_square("black")
-        #TODO REST OF THE ITEMS, COLORED DOORS, CONNECTION UP, CONNECTION DOWN, ETC.
 
     def get_cell(self, x, y):
-        return self.world[self.p][y][x]
+        try:
+            return self.world()[self.p][y][x]
+        except IndexError:
+            return Tile()
     
     def spotlight(self,pos_tuple,size):
         x,y = pos_tuple
@@ -96,7 +81,7 @@ class Game:
             closest_hit = None
             for obstacle in self.world.flatten(self.p):
                 if obstacle.full():
-                    obRect = obstacle.rect()
+                    obRect = obstacle.rect
                     center = Vector2(obRect.center)
                     obstacleRadius = distance(obRect.topleft,obRect.center)
                     if (distance(self.player.rect.center,obRect.center) - obstacleRadius) < lightRadius:
@@ -109,7 +94,7 @@ class Game:
                             if hit != None:
                                 if closest_hit is None or distance(self.player.rect.center,hit) < distance(self.player.rect.center,closest_hit):
                                     closest_hit = hit
-                            
+                        
             collisionPoints.append(closest_hit if closest_hit != None else rayEnd)
         return collisionPoints
     
@@ -121,41 +106,98 @@ class Game:
         for points in self.ray_intersections(angleInc,lightRadius):
              pygame.draw.circle(self.screen, (255, 0, 0), points, 1)
 
+    
+    def get_collision(self, base, sprites):
+        collide = pygame.sprite.spritecollide(base, sprites, dokill=False)
+        return collide
 
+    def tile_collide(self, tile: Tile):
+        if tile.not_wall() or tile._p != self.p:
+            return False
+        colls = collision(self.player.brect, tile.rect)
+        if Collision.TOP in colls:
+            self.player.clip_top(tile.rect.bottom)
+        if Collision.BOTTOM in colls:
+            self.player.clip_bot(tile.rect.top)
+        if Collision.LEFT in colls:
+            self.player.clip_left(tile.rect.right)
+        if Collision.RIGHT in colls:
+            self.player.clip_right(tile.rect.left)
+        return Collision.NONE not in colls
 
-    def main(self):
+    def handle_player_collision(self):
+        coll = self.get_collision(self.player, self.sprites)
+        self.buf = []
+        for obj in coll:
+            if isinstance(obj, Tile):
+                if self.tile_collide(obj):
+                    self.player.set_brect()
+                    self.buf.append(obj)
+            if isinstance(obj, Enemy):
+                if collision(self.player.brect, obj.brect):
+                    self.player.decrease_hp()
+
+    def main(self, debug=False):
         running = True
-        self.init_World(MAP)
+        self.init_World(genmaze(True))
         self.lightRadius = 50
+        self.buf = []
+        self.enemies = []
+        for i in range(NUM_ENEMIES):
+            x, y = self.world.get_empty_cell(self.p)
+            if (x, y) != (-1, -1):
+                self.enemies.append(Enemy(x, y, self.p, self.sprites))
         while running:
             self.screen.fill((30,30,30)) # Used for the lighting
             down = set()
             for event in pygame.event.get():
+                self.title.process(event)
                 if event.type == QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     down.add(event.key)
                     if event.key == pygame.K_SPACE:
-                        if self.get_cell(self.player.x, self.player.y + 1).mode() == '+':
-                            self.p = (self.p + 1) % self.planes
+                        print(self.player.x, self.player.y)
+                        cell = self.get_cell(self.player.x, self.player.y)
+                        print(cell.mode(), cell.isconn())
+                        if cell.isconn():
+                            self.p = cell.conn()
             pressed = pygame.key.get_pressed()
-            if pressed[K_a]:
-                self.lightRadius += 0.5
-            if pressed[K_b]:
-                self.lightRadius -= 0.5
+            if pressed[K_g]:
+                self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius + DELTA_LIGHT))
+            if pressed[K_h]:
+                self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius - DELTA_LIGHT))
+            
+            a = self.world.pathfind(0, (4, 6), (10, 0))
+            self.player.update_keys(self, pressed, down)
+            self.handle_player_collision()
+            self.sprites.update(self)
+            if not self.title.draw(self.screen):
+                if self.ff:
+                    self.music.stop()
+                    self.music = pygame.mixer.Sound("Assets Folder/Music/Dream Sakura_Loop.ogg")
+                    # self.music = pygame.mixer.Sound("Assets Folder/Music/Mysterious Kyoto.wav")
+                    self.music.play(-1)
+                    self.ff = False
+                for y, row in enumerate(self.world()[self.p]):
+                    for x, cell in enumerate(row):
+                        self.screen.blit(cell.image, cell.rect)
 
-            self.sprites.update(self, pressed, down)
-
-            for y, row in enumerate(self.world()[self.p]):
-                for x, cell in enumerate(row):
-                    self.screen.blit(cell.image(), cell.rect())
-            self.screen.blit(self.player.image, self.player.rect)
-            #self.spotlight(self.player.rect.center, self.lightRadius)
-            self.cast_light(10,self.lightRadius)
-
+                for enemy in self.enemies:
+                    self.screen.blit(enemy.image, enemy.rect)
+                self.screen.blit(self.player.image, self.player.rect)
+                #self.spotlight(self.player.rect.center, self.lightRadius)
+                self.cast_light(10,self.lightRadius)
+            
+            if debug:
+                pygame.draw.rect(self.screen, "red", self.player.brect, width=1)
+                pygame.draw.rect(self.screen, "blue", self.player.rect, width=1)
+                for obj in self.buf:
+                    pygame.draw.rect(self.screen, "green", obj.rect, width=1)
+            
             pygame.display.flip()
             self.clock.tick(FPS)
 
 
 game = Game()
-game.main()
+game.main(debug=False)
