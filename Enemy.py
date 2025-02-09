@@ -1,23 +1,22 @@
+import random
 import time
+
+import pygame
 
 from config import *
 from utils import *
-from ss import *
-from animation import *
-
-import pygame
-from pygame.locals import *
 
 from character import Character
+from ss import Spritesheet
+from animation import Animation
 
 
-class Player(Character):
-    def __init__(self, x, y, *groups):
+class Enemy(Character):
+    def __init__(self, x, y, p, *groups):
         spritesheet = Spritesheet('Assets Folder/pp/Characters/Basic Charakter Spritesheet.png', 48)
-        super().__init__(x, y, PLAYER_SPEED, spritesheet, *groups)
+        super().__init__(x, y, ENEMY_SPEED, spritesheet, *groups)
+        self._p = p
 
-        self.hp = 5
-        
         sps = self.spritesheet
         self.down = (Animation(sps, 5, [0, 1, 2, 3]), Animation(sps, 5, [0]))
         self.right = (Animation(sps, 5, [12, 13, 14, 15]), Animation(sps, 5, [12]))
@@ -26,24 +25,28 @@ class Player(Character):
         self.orit = 0
         self.moving = False
 
-        self.last_hit = 0
+        self.last_check = time.time()
+        self.lifetime = random.randint(MIN_LIFETIME, MAX_LIFETIME)
+
+    def update(self, game, *args, **kwargs):
+        if time.time() - self.last_check > self.lifetime * 1000:
+            self.kill()
+        if self._p != game.p:
+            return
+        if (self.x, self.y) == (game.player.x, game.player.y):
+            return
+        path = game.world.pathfind(self._p, (self.x, self.y), (game.player.x, game.player.y))
+        if path == None or len(path) > MAX_AGGRO:
+            return
+        if len(path) < 2:
+            dx, dy = game.player.scene_x - self.scene_x, game.player.scene_y - self.scene_y
+        else:
+            dx, dy = path[1][0] - self.x, path[1][1] - self.y
+        self.last_check = time.time()
+        self.update_pos(game, dx, dy)
+        super().update()
     
-    def decrease_hp(self):
-        now = time.time()
-        if now - self.last_hit > HIT_COOLDOWN * 1000:
-            self.hp -= 1
-            self.last_hit = now
-    
-    def update_keys(self, game, pressed, down):
-        dx, dy = 0, 0
-        if pressed[K_UP] or pressed[K_w]:
-            dy -= self.spe
-        if pressed[K_DOWN] or pressed[K_s]:
-            dy += self.spe
-        if pressed[K_LEFT] or pressed[K_a]:
-            dx -= self.spe
-        if pressed[K_RIGHT] or pressed[K_d]:
-            dx += self.spe
+    def update_pos(self, game, dx, dy):
         r = (dx ** 2 + dy ** 2) ** 0.5
         dx *= self.spe / (r + 1e-6)
         dy *= self.spe / (r + 1e-6)
