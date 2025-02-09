@@ -16,8 +16,8 @@ class Tile(pygame.sprite.Sprite):
         Orient.BOTTOMLEFT_IN: [(0, 5)],
         Orient.TOPRIGHT_IN: [(4, 0)],
         Orient.TOPLEFT_IN: [(4, 5)],
-        Orient.BOTTOMRIGHT_OUT: [(0, 0)],
-        Orient.BOTTOMLEFT_OUT: [(0, 5)],
+        Orient.BOTTOMRIGHT_OUT: [(0, 1), (0, 2), (0, 3), (0, 4)],
+        Orient.BOTTOMLEFT_OUT: [(0, 1), (0, 2), (0, 3), (0, 4)],
         Orient.TOPRIGHT_OUT: [(5, 3), (5, 5)],
         Orient.TOPLEFT_OUT: [(5, 0), (5, 4)]
     }
