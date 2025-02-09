@@ -7,6 +7,7 @@ from utils import *
 from title import *
 
 from Player import Player
+from Enemy import Enemy
 from primitives import Tile, World
 from genmaze import genmaze
 
@@ -108,6 +109,11 @@ class Game:
         self.init_World(genmaze(True))
         self.lightRadius = 5
         self.buf = []
+        self.enemies = []
+        for i in range(1):
+            x, y = self.world.get_empty_cell(self.p)
+            if (x, y) != (-1, -1):
+                self.enemies.append(Enemy(x, y, self.p, self.sprites))
         while running:
             down = set()
             for event in pygame.event.get():
@@ -128,9 +134,10 @@ class Game:
             if pressed[K_h]:
                 self.lightRadius = max(MIN_LIGHT, min(MAX_LIGHT, self.lightRadius - DELTA_LIGHT))
             
+            a = self.world.pathfind(0, (4, 6), (10, 0))
             self.player.update_keys(self, pressed, down)
-            self.handle_player_collision()
-            self.sprites.update()
+            # self.handle_player_collision()
+            self.sprites.update(self)
             if not self.title.draw(self.screen):
                 if self.ff:
                     self.music.stop()
@@ -142,6 +149,8 @@ class Game:
                     for x, cell in enumerate(row):
                         self.screen.blit(cell.image, cell.rect)
 
+                for enemy in self.enemies:
+                    self.screen.blit(enemy.image, enemy.rect)
                 self.screen.blit(self.player.image, self.player.rect)
                 self.spotlight(self.player.rect.center, self.lightRadius)
             
