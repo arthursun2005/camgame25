@@ -2,7 +2,7 @@ import pygame
 
 from config import *
 
-from button import Button
+from button import Button, AABB
 
 T_INGAME = 1
 T_INTITLE = 2
@@ -23,6 +23,9 @@ class Title:
                 self.ongame = True
 
     def draw(self, s):
+        w, h = s.get_size()
+        for i in range(3):
+            self.buttons[i].aabb = AABB.c(w / 2, 660 + i * 150, 300, 150)
         if self.ongame:
             return False
         s.blit(self.ss, (0, 0))

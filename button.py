@@ -16,6 +16,10 @@ class AABB:
     def y(self):
         return (self.min_y + self.max_y) * 0.5
 
+    @staticmethod
+    def c(x, y, w, h):
+        return AABB(x - w/2, x + w/2, y - h/2, y + h/2)
+
 CC = [
     (1, 0, 0),
     (0, 1, 0),
