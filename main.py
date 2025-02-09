@@ -178,6 +178,7 @@ class Game:
             self.sprites.update(self)
             if len(self.enemies) < MAX_ENEMIES:
                 self.spawn_enemy()
+            self.set_lightradius(self.player.hp * 10)
 
             if not self.title.draw(self.screen):
                 if self.ff:
